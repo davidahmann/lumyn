@@ -30,7 +30,8 @@ def diff_workspace(tmp_path):
                 "evidence": {"risk": "low"},
                 "context": {
                     "mode": "digest_only",
-                    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+                    "digest": "sha256:"
+                    + "0000000000000000000000000000000000000000000000000000000000000000",
                 },
             },
         },
@@ -52,7 +53,8 @@ def diff_workspace(tmp_path):
                 "evidence": {"risk": "high"},
                 "context": {
                     "mode": "digest_only",
-                    "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+                    "digest": "sha256:"
+                    + "1111111111111111111111111111111111111111111111111111111111111111",
                 },
             },
         },
@@ -111,7 +113,8 @@ def test_diff_regressions(diff_workspace):
     result = runner.invoke(app, ["diff", str(dataset), "--policy", str(strict_policy)])
 
     assert result.exit_code == 1, (
-        f"Expected 1 (Regressions), got {result.exit_code}. Stdout: {result.stdout} Stderr: {result.stderr}"
+        f"Expected 1 (Regressions), got {result.exit_code}. "
+        f"Stdout: {result.stdout} Stderr: {result.stderr}"
     )
     assert "Changes: 1" in result.stdout
     assert "rec_001" in result.stdout
@@ -123,10 +126,12 @@ def test_diff_regressions(diff_workspace):
 def test_diff_clean(diff_workspace):
     dataset, _, loose_policy = diff_workspace
 
-    # Run diff with loose policy -> Should match (rec_001 ALLOW->ALLOW via default, rec_002 DENY->DENY via rule)
+    # Run diff with loose policy -> Should match
+    # (rec_001 ALLOW->ALLOW via default, rec_002 DENY->DENY via rule)
     result = runner.invoke(app, ["diff", str(dataset), "--policy", str(loose_policy)])
 
     assert result.exit_code == 0, (
-        f"Expected 0 (Clean), got {result.exit_code}. Stdout: {result.stdout} Stderr: {result.stderr}"
+        f"Expected 0 (Clean), got {result.exit_code}. "
+        f"Stdout: {result.stdout} Stderr: {result.stderr}"
     )
     assert "No regressions found" in result.stdout

@@ -28,7 +28,8 @@ def main(
 
     store = SqliteStore(paths.db_path)
     # We rely on raw SQL access here for efficient polling of new rows
-    # The store API doesn't expose "get after ID" easily, so we extend it privately here or valid use of public connection
+    # The store API doesn't expose "get after ID" easily, so we extend it privately here or valid use
+    # of public connection
 
     typer.secho("Connecting to the Matrix...", fg=typer.colors.GREEN, bold=True)
     time.sleep(0.5)
@@ -53,7 +54,8 @@ def main(
             new_rows = []
             with store.connect() as conn:
                 cur = conn.execute(
-                    "SELECT rowid, verdict, action_type, subject_id, created_at FROM decisions WHERE rowid > ? ORDER BY rowid ASC",
+                    "SELECT rowid, verdict, action_type, subject_id, created_at FROM decisions "
+                    "WHERE rowid > ? ORDER BY rowid ASC",
                     (last_rowid,),
                 )
                 new_rows = cur.fetchall()
