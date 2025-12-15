@@ -28,7 +28,7 @@ Lumyn's unit of evidence is a `decision_id`. Paste it into the ticket, then:
 - **Compounding reliability**: labeled failures/successes feed Experience Memory similarity.
 - **Drop-in**: works as a Python library and as an optional HTTP service.
 
-## Operations & Safety (Wow)
+## Operations & Safety
 
 #### 📺 The War Room (`lumyn monitor`)
 "Less drama. Fewer incidents."
