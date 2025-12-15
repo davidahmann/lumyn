@@ -166,6 +166,7 @@ Call:
 
 Endpoints:
 - `POST /v0/decide` -> DecisionRecord
+- `POST /v1/decide` -> DecisionRecord (v1 schema + v1 verdicts; see `schemas/*.v1*`)
 - `GET /v0/decisions/{decision_id}`
 - `POST /v0/decisions/{decision_id}/events`
 - `GET /v0/policy`
@@ -173,6 +174,10 @@ Endpoints:
 Optional request signing:
 - Set `LUMYN_SIGNING_SECRET`
 - Send `X-Lumyn-Signature: sha256:<hmac(body_bytes)>` over the exact bytes you send
+
+Schema conversion helpers:
+- `lumyn convert decision_record.json --to v1`
+- `lumyn convert decision_pack.zip --to v1 --out decision_pack_v1.zip`
 
 ## Policy packs (starter templates)
 

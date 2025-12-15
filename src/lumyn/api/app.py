@@ -5,6 +5,7 @@ from typing import Any
 from fastapi import FastAPI
 
 from lumyn.api.routes_v0 import ApiV0Deps, build_routes_v0
+from lumyn.api.routes_v1 import ApiV1Deps, build_routes_v1
 from lumyn.config import Settings, load_settings, storage_path_from_url
 from lumyn.core.decide import LumynConfig
 from lumyn.store.sqlite import SqliteStore
@@ -33,6 +34,13 @@ def create_app(*, settings: Settings | None = None) -> FastAPI:
 
     app = FastAPI(title="Lumyn", version=__version__)
     app.include_router(build_routes_v0(deps=deps))
+
+    deps_v1 = ApiV1Deps(
+        config=deps.config,
+        store=deps.store,
+        signing_secret=deps.signing_secret,
+    )
+    app.include_router(build_routes_v1(deps=deps_v1))
 
     @app.get("/healthz")
     def healthz() -> dict[str, Any]:

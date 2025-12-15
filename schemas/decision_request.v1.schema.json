@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumyn.dev/schemas/decision_request.v1.schema.json",
+  "title": "Lumyn DecisionRequest (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "subject", "action", "context"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "decision_request.v1" },
+    "request_id": { "type": "string", "description": "Optional idempotency key (ULID/UUID)." },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "correlation_id": { "type": "string" },
+        "span_id": { "type": "string" }
+      }
+    },
+    "tenant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tenant_id"],
+      "properties": {
+        "tenant_id": { "type": "string", "minLength": 1 },
+        "environment": { "type": "string", "enum": ["dev", "staging", "prod"] }
+      }
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "id"],
+      "properties": {
+        "type": { "type": "string", "enum": ["service", "agent", "user", "job"] },
+        "id": { "type": "string", "minLength": 1 },
+        "tenant_id": { "type": "string" },
+        "ip": { "type": "string" },
+        "user_agent": { "type": "string" },
+        "roles": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "action": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "intent"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Namespaced action type, e.g. support.refund, support.close_ticket.",
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9_]+)+$"
+        },
+        "intent": { "type": "string", "minLength": 1 },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "system": { "type": "string" },
+            "resource_type": { "type": "string" },
+            "resource_id": { "type": "string" }
+          }
+        },
+        "amount": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": { "type": "number" },
+            "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+          }
+        },
+        "tags": { "type": "array", "items": { "type": "string" }, "default": [] }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "description": "Caller-provided structured signals; Lumyn does not fetch external data in v1.",
+      "additionalProperties": true,
+      "default": {}
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "digest"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["digest_only", "inline", "reference"] },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "type": "string" },
+            "id": { "type": "string" },
+            "uri": { "type": "string" }
+          }
+        },
+        "inline": { "type": "object", "additionalProperties": true },
+        "redaction": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "profile": { "type": "string", "description": "default|strict|off" },
+            "fields_removed": { "type": "array", "items": { "type": "string" }, "default": [] }
+          }
+        }
+      },
+      "allOf": [
+        { "if": { "properties": { "mode": { "const": "inline" } } }, "then": { "required": ["inline"] } },
+        { "if": { "properties": { "mode": { "const": "reference" } } }, "then": { "required": ["ref"] } }
+      ]
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": { "type": "string" },
+        "policy_version": { "type": "string" },
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] }
+      }
+    },
+    "hints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] },
+        "dry_run": { "type": "boolean", "default": false }
+      }
+    }
+    ,
+    "extensions": { "type": "object", "additionalProperties": true, "default": {} }
+  }
+}

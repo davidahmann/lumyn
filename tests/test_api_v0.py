@@ -56,6 +56,30 @@ def test_api_decide_persists_and_is_fetchable(tmp_path: Path) -> None:
     assert persisted is not None
 
 
+def test_api_v1_decide_returns_v1_record(tmp_path: Path) -> None:
+    store_path = tmp_path / "lumyn.db"
+    app = create_app(settings=_settings(store_path=store_path))
+    client = TestClient(app)
+
+    request_obj = {
+        "schema_version": "decision_request.v1",
+        "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
+        "action": {"type": "support.update_ticket", "intent": "Update ticket"},
+        "evidence": {"ticket_id": "ZD-4002"},
+        "context": {
+            "mode": "digest_only",
+            "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
+    }
+
+    resp = client.post("/v1/decide", json=request_obj)
+    assert resp.status_code == 200, resp.text
+    record = resp.json()
+    assert record["schema_version"] == "decision_record.v1"
+    assert record["request"]["schema_version"] == "decision_request.v1"
+    assert record["verdict"] in {"ALLOW", "DENY", "ABSTAIN", "ESCALATE"}
+
+
 def test_api_events_endpoint(tmp_path: Path) -> None:
     store_path = tmp_path / "lumyn.db"
     app = create_app(settings=_settings(store_path=store_path))
@@ -132,6 +156,37 @@ def test_api_decide_requires_signature_when_configured(tmp_path: Path) -> None:
     sig = "sha256:" + hmac.new(signing_key.encode("utf-8"), body, hashlib.sha256).hexdigest()
     ok = client.post(
         "/v0/decide",
+        content=body,
+        headers={"content-type": "application/json", "X-Lumyn-Signature": sig},
+    )
+    assert ok.status_code == 200, ok.text
+
+
+def test_api_v1_decide_requires_signature_when_configured(tmp_path: Path) -> None:
+    store_path = tmp_path / "lumyn.db"
+    signing_key = "test-signing-key"
+    app = create_app(settings=_settings(store_path=store_path, signing_secret=signing_key))
+    client = TestClient(app)
+
+    request_obj = {
+        "schema_version": "decision_request.v1",
+        "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
+        "action": {"type": "support.update_ticket", "intent": "Update ticket"},
+        "evidence": {"ticket_id": "ZD-4002"},
+        "context": {
+            "mode": "digest_only",
+            "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        },
+    }
+
+    missing = client.post("/v1/decide", json=request_obj)
+    assert missing.status_code == 401
+    assert missing.json()["detail"]["reason_code"] == "AUTH_REQUIRED"
+
+    body = json.dumps(request_obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
+    sig = "sha256:" + hmac.new(signing_key.encode("utf-8"), body, hashlib.sha256).hexdigest()
+    ok = client.post(
+        "/v1/decide",
         content=body,
         headers={"content-type": "application/json", "X-Lumyn-Signature": sig},
     )

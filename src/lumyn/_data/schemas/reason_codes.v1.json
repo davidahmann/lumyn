@@ -1,0 +1,59 @@
+{
+  "schema_version": "reason_codes.v1",
+  "codes": [
+    {
+      "code": "NO_MATCH_DEFAULT_ESCALATE",
+      "description": "No rule matched; defaulting to escalation."
+    },
+    { "code": "INVALID_REQUEST_SCHEMA", "description": "Request failed schema validation." },
+    { "code": "INVALID_POLICY", "description": "Policy failed validation." },
+    { "code": "STORAGE_UNAVAILABLE", "description": "Persistence unavailable; decision blocked." },
+    { "code": "MISSING_EVIDENCE_REFUND", "description": "Missing required evidence for refund." },
+    { "code": "MISSING_EVIDENCE_CREDIT", "description": "Missing required evidence for credit issuance." },
+    { "code": "MISSING_EVIDENCE_CLOSE_TICKET", "description": "Missing required evidence for closing a ticket." },
+    { "code": "MISSING_EVIDENCE_UPDATE_TICKET", "description": "Missing required evidence for updating a ticket." },
+    { "code": "MISSING_EVIDENCE_CHANGE_PLAN", "description": "Missing required evidence for plan changes." },
+    { "code": "MISSING_EVIDENCE_RESET_PASSWORD", "description": "Missing required evidence for password resets." },
+    {
+      "code": "MISSING_EVIDENCE_CHANGE_EMAIL",
+      "description": "Missing required evidence for email changes."
+    },
+    {
+      "code": "MISSING_EVIDENCE_APPROVE_SPEND",
+      "description": "Missing required evidence for approving spend."
+    },
+    { "code": "REFUND_OVER_ESCALATION_LIMIT", "description": "Refund amount over escalation threshold." },
+    {
+      "code": "SPEND_OVER_APPROVAL_LIMIT",
+      "description": "Spend amount over approval threshold; escalated."
+    },
+    { "code": "REFUND_SMALL_LOW_RISK", "description": "Small refund with low risk; trusted." },
+    { "code": "CREDIT_SMALL", "description": "Small credit issuance allowed by policy." },
+    { "code": "SPEND_SMALL_OK", "description": "Small spend approved by policy." },
+    { "code": "CHANGE_EMAIL_OK", "description": "Email change allowed by policy." },
+    { "code": "REFUND_REPEAT_CUSTOMER", "description": "Refund requested by repeat-refund customer." },
+    { "code": "NEW_CUSTOMER_REFUND_ESCALATE", "description": "Refund requested for a new customer." },
+    { "code": "CHARGEBACK_RISK_ESCALATE", "description": "Chargeback risk over escalation threshold." },
+    {
+      "code": "FAILURE_MEMORY_SIMILAR_ESCALATE",
+      "description": "Similarity to a labeled failure is high; escalated."
+    },
+    { "code": "CHARGEBACK_RISK_BLOCK", "description": "Chargeback risk too high; refund blocked." },
+    {
+      "code": "CHANGE_EMAIL_TAKEOVER_RISK_BLOCK",
+      "description": "Account takeover risk too high; email change blocked."
+    },
+    { "code": "PAYMENT_INSTRUMENT_HIGH_RISK", "description": "Payment instrument risk too high; action blocked." },
+    { "code": "ACCOUNT_TAKEOVER_RISK_BLOCK", "description": "Account takeover risk too high; action blocked." },
+    {
+      "code": "MANUAL_APPROVAL_PRESENT_ESCALATE",
+      "description": "Manual approval required by workflow; escalated."
+    },
+    {
+      "code": "MISSING_FX_RATE",
+      "description": "Amount not in USD and no fx rate provided; more info required."
+    },
+    { "code": "CLOSE_TICKET_OK", "description": "Ticket close allowed by policy." },
+    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumyn.dev/schemas/policy.v1.schema.json",
+  "title": "Lumyn Policy (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_id", "policy_version", "defaults", "rules"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "policy.v1" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "default_verdict", "default_reason_code"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] },
+        "default_verdict": { "type": "string", "enum": ["ALLOW", "DENY", "ABSTAIN", "ESCALATE"] },
+        "default_reason_code": { "type": "string", "minLength": 1 }
+      }
+    },
+    "thresholds": { "type": "object", "additionalProperties": true, "default": {} },
+    "required_evidence": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } }, "default": {} },
+    "rules": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": true } },
+    "extensions": { "type": "object", "additionalProperties": true, "default": {} }
+  }
+}
+

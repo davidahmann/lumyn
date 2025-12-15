@@ -15,6 +15,26 @@ This document is the canonical definition of Lumyn’s v0 contracts and determin
 - v0 changes are **additive only** (new optional fields). Breaking changes require `*.v1`.
 - New experimental fields go under `extensions` (namespaced keys) to prevent core schema churn.
 
+## v1 preview (draft contracts)
+
+This repo includes draft `*.v1` schemas and a compatibility wrapper endpoint:
+
+- `schemas/decision_request.v1.schema.json`
+- `schemas/decision_record.v1.schema.json`
+- `POST /v1/decide`
+- `lumyn convert … --to v1`
+
+Stability note: `v1` is not covered by `lumyn`’s long-term compatibility guarantees until a
+future `1.0.0` release. Today, `v0` remains the primary, supported contract.
+
+### v1 verdict model
+
+v1 uses the four-outcome model: `ALLOW | DENY | ABSTAIN | ESCALATE`.
+
+The current v0→v1 mapping is:
+- `TRUST` → `ALLOW`
+- `QUERY` → `ABSTAIN` (caller should consult `queries` for required fields)
+
 ## Deterministic IDs, canonicalization, and digests
 
 ### IDs

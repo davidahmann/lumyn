@@ -100,6 +100,12 @@ Call it:
 
 `curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' --data-binary @request.json | jq .`
 
+v1 preview endpoint (same engine; v1 request/record schema wrapper):
+
+`jq '.schema_version=\"decision_request.v1\"' request.json > request_v1.json`
+
+`curl -sS -X POST http://127.0.0.1:8000/v1/decide -H 'content-type: application/json' --data-binary @request_v1.json | jq .`
+
 Optional request signing:
 - Set `LUMYN_SIGNING_SECRET`
 - Send `X-Lumyn-Signature: sha256:<hmac(body_bytes)>` over the exact bytes you send

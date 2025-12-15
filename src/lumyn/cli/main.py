@@ -2,6 +2,7 @@ import typer
 
 from lumyn.version import __version__
 
+from .commands import convert as convert_cmd
 from .commands import decide as decide_cmd
 from .commands import demo as demo_cmd
 from .commands import doctor as doctor_cmd
@@ -38,6 +39,7 @@ app.command("export")(export_cmd.main)
 app.command("replay")(replay_cmd.main)
 app.command("label")(label_cmd.main)
 app.add_typer(policy_cmd.app, name="policy")
+app.command("convert")(convert_cmd.main)
 app.command("doctor")(doctor_cmd.main)
 app.command("serve")(serve_cmd.main)
 
