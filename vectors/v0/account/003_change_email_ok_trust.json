@@ -1,0 +1,12 @@
+{
+  "name": "change_email_ok_trust",
+  "policy_path": "policies/packs/lumyn-account.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "user", "id": "user-3", "tenant_id": "acme" },
+    "action": { "type": "account.change_email", "intent": "Change account email after reauth" },
+    "evidence": { "user_id": "user-3", "new_email": "new@example.com", "verification_method": "reauth" },
+    "context": { "mode": "digest_only", "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333" }
+  },
+  "expect": { "verdict": "TRUST", "reason_codes_includes": ["CHANGE_EMAIL_OK"] }
+}

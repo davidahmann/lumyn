@@ -11,6 +11,7 @@ from .commands import init as init_cmd
 from .commands import label as label_cmd
 from .commands import policy as policy_cmd
 from .commands import replay as replay_cmd
+from .commands import serve as serve_cmd
 from .commands import show as show_cmd
 
 app = typer.Typer(add_completion=False)
@@ -38,6 +39,7 @@ app.command("replay")(replay_cmd.main)
 app.command("label")(label_cmd.main)
 app.add_typer(policy_cmd.app, name="policy")
 app.command("doctor")(doctor_cmd.main)
+app.command("serve")(serve_cmd.main)
 
 
 def main() -> None:

@@ -1,0 +1,11 @@
+{
+  "name": "change_email_missing_evidence_query",
+  "policy_path": "policies/packs/lumyn-account.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "user", "id": "user-1", "tenant_id": "acme" },
+    "action": { "type": "account.change_email", "intent": "Change account email to a new address" },
+    "context": { "mode": "digest_only", "digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_CHANGE_EMAIL"] }
+}

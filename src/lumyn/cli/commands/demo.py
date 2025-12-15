@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from pathlib import Path
 from typing import Any
 
@@ -9,6 +10,7 @@ from lumyn.core.decide import LumynConfig, decide
 
 from ..util import resolve_workspace_paths, write_json_to_path_or_stdout
 from .init import DEFAULT_POLICY_TEMPLATE, initialize_workspace
+from .label import main as label_main
 
 app = typer.Typer(help="Run a local demo (creates multiple Decision Records).")
 
@@ -63,6 +65,11 @@ def _demo_requests() -> list[dict[str, Any]]:
 def main(
     *,
     workspace: Path = typer.Option(Path(".lumyn"), "--workspace", help="Workspace directory."),
+    story: bool = typer.Option(
+        False,
+        "--story",
+        help="Print a narrative demo that labels a failure and re-runs a similar decision.",
+    ),
     out: Path = typer.Option(
         Path("-"),
         "--out",
@@ -81,6 +88,63 @@ def main(
         )
 
     cfg = LumynConfig(policy_path=paths.policy_path, store_path=paths.db_path)
+    if story:
+        req1 = copy.deepcopy(_demo_requests()[0])
+        action_obj = req1.get("action")
+        if isinstance(action_obj, dict):
+            amount_obj = action_obj.get("amount")
+            if isinstance(amount_obj, dict):
+                amount_obj["value"] = 12.0
+
+        evidence_obj = req1.get("evidence")
+        evidence: dict[str, Any]
+        if isinstance(evidence_obj, dict):
+            evidence = evidence_obj
+        else:
+            evidence = {}
+            req1["evidence"] = evidence
+        evidence.setdefault("customer_age_days", 180)
+        evidence.setdefault("previous_refund_count_90d", 0)
+        evidence.setdefault("chargeback_risk", 0.05)
+        evidence.setdefault("payment_instrument_risk", "low")
+
+        req2 = copy.deepcopy(req1)
+        req2["context"] = {
+            "mode": "digest_only",
+            "digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        }
+
+        typer.echo("Lumyn demo story")
+        typer.echo("1) Decide on a refund request")
+        r1 = decide(req1, config=cfg)
+        typer.echo(f"   decision_id: {r1['decision_id']}")
+        typer.echo(f"   verdict: {r1['verdict']}")
+        typer.echo(f"   reason_codes: {', '.join(r1.get('reason_codes', []))}")
+
+        typer.echo("2) Label the outcome as a failure (updates Experience Memory)")
+        label_main(
+            r1["decision_id"],
+            label="failure",
+            summary="Demo: refund led to bad outcome",
+            workspace=workspace,
+        )
+
+        typer.echo("3) Re-run a similar decision (should reflect memory in policy + risk_signals)")
+        r2 = decide(req2, config=cfg)
+        similarity = 0.0
+        risk_signals = r2.get("risk_signals")
+        if isinstance(risk_signals, dict):
+            failure_similarity = risk_signals.get("failure_similarity")
+            if isinstance(failure_similarity, dict):
+                score = failure_similarity.get("score")
+                if isinstance(score, int | float):
+                    similarity = float(score)
+        typer.echo(f"   decision_id: {r2['decision_id']}")
+        typer.echo(f"   verdict: {r2['verdict']}")
+        typer.echo(f"   reason_codes: {', '.join(r2.get('reason_codes', []))}")
+        typer.echo(f"   failure_similarity.score: {similarity}")
+        return
+
     records = [decide(req, config=cfg) for req in _demo_requests()]
 
     write_json_to_path_or_stdout(records, path=out, pretty=pretty)

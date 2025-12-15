@@ -1,0 +1,15 @@
+{
+  "name": "approve_spend_missing_evidence_query",
+  "policy_path": "policies/packs/lumyn-billing.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "service", "id": "billing-bot", "tenant_id": "acme" },
+    "action": {
+      "type": "billing.approve_spend",
+      "intent": "Approve invoice without identifiers",
+      "amount": { "value": 50.0, "currency": "USD" }
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_APPROVE_SPEND"] }
+}

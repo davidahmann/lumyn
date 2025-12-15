@@ -1,0 +1,42 @@
+schema_version: policy.v0
+policy_id: lumyn-billing
+policy_version: "0.1.0"
+
+defaults:
+  mode: enforce
+  default_verdict: ESCALATE
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
+
+required_evidence:
+  billing.approve_spend: [invoice_id, vendor_id, requested_by]
+
+rules:
+  - id: B001
+    stage: REQUIREMENTS
+    when: { action_type: billing.approve_spend }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_APPROVE_SPEND]
+      queries:
+        - field: evidence.invoice_id
+          question: What invoice_id is being approved?
+        - field: evidence.vendor_id
+          question: What vendor_id issued this invoice?
+        - field: evidence.requested_by
+          question: Who requested this spend approval?
+
+  - id: B030
+    stage: ESCALATIONS
+    when: { action_type: billing.approve_spend }
+    if: { amount_usd_gt: 1000 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [SPEND_OVER_APPROVAL_LIMIT]
+
+  - id: B050
+    stage: TRUST_PATHS
+    when: { action_type: billing.approve_spend }
+    if: { amount_usd_lte: 100 }
+    then:
+      verdict: TRUST
+      reason_codes: [SPEND_SMALL_OK]

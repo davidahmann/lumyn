@@ -101,12 +101,6 @@ def decide(
             if isinstance(redaction, dict) and isinstance(redaction.get("profile"), str):
                 redaction_profile = redaction["profile"]
 
-        request_for_record = copy.deepcopy(request_eval)
-        redaction_result = redact_request_for_persistence(
-            request_for_record, profile=redaction_profile
-        )
-        inputs_digest = compute_inputs_digest(redaction_result.request, normalized=normalized)
-
         store_impl = store or SqliteStore(cfg.store_path)
         try:
             store_impl.init()
@@ -118,6 +112,13 @@ def decide(
             )
         except Exception as e:
             if _is_storage_error(e):
+                request_for_record = copy.deepcopy(request_eval)
+                redaction_result = redact_request_for_persistence(
+                    request_for_record, profile=redaction_profile
+                )
+                inputs_digest = compute_inputs_digest(
+                    redaction_result.request, normalized=normalized
+                )
                 record = _abstain_storage_unavailable_record(
                     request_for_record=redaction_result.request,
                     loaded_policy=loaded_policy,
@@ -179,11 +180,20 @@ def decide(
                 }
             )
 
-        evaluation = evaluate_policy(request_eval, policy=policy)
-
         matches = top_k_matches(query_feature=query_feature, candidates=candidates, top_k=cfg.top_k)
         failure_matches = [m for m in matches if m.label == "failure"]
         failure_similarity_score = failure_matches[0].score if failure_matches else 0.0
+
+        evidence_obj = request_eval.get("evidence")
+        evidence: dict[str, Any]
+        if isinstance(evidence_obj, dict):
+            evidence = evidence_obj
+        else:
+            evidence = {}
+            request_eval["evidence"] = evidence
+        evidence["failure_similarity_score"] = float(failure_similarity_score)
+
+        evaluation = evaluate_policy(request_eval, policy=policy)
 
         # Uncertainty MVP: deterministic heuristic.
         uncertainty = 0.2
@@ -192,6 +202,12 @@ def decide(
         if failure_similarity_score >= 0.35:
             uncertainty += 0.3
         uncertainty = min(1.0, max(0.0, uncertainty))
+
+        request_for_record = copy.deepcopy(request_eval)
+        redaction_result = redact_request_for_persistence(
+            request_for_record, profile=redaction_profile
+        )
+        inputs_digest = compute_inputs_digest(redaction_result.request, normalized=normalized)
 
         record = build_decision_record(
             request=redaction_result.request,

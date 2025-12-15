@@ -1,0 +1,49 @@
+schema_version: policy.v0
+policy_id: lumyn-account
+policy_version: "0.1.0"
+
+defaults:
+  mode: enforce
+  default_verdict: ESCALATE
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
+
+required_evidence:
+  account.change_email: [user_id, new_email, verification_method]
+
+rules:
+  - id: A001
+    stage: REQUIREMENTS
+    when: { action_type: account.change_email }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_CHANGE_EMAIL]
+      queries:
+        - field: evidence.user_id
+          question: What user_id is requesting the email change?
+        - field: evidence.new_email
+          question: What is the new_email address?
+        - field: evidence.verification_method
+          question: What verification_method was used (e.g., reauth, magic_link, support)?
+
+  - id: A020
+    stage: HARD_BLOCKS
+    when: { action_type: account.change_email }
+    if: { evidence.account_takeover_risk_gte: 0.70 }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [CHANGE_EMAIL_TAKEOVER_RISK_BLOCK]
+
+  - id: A030
+    stage: ESCALATIONS
+    when: { action_type: account.change_email }
+    if: { evidence.manual_approval_is: true }
+    then:
+      verdict: ESCALATE
+      reason_codes: [MANUAL_APPROVAL_PRESENT_ESCALATE]
+
+  - id: A050
+    stage: TRUST_PATHS
+    when: { action_type: account.change_email }
+    then:
+      verdict: TRUST
+      reason_codes: [CHANGE_EMAIL_OK]

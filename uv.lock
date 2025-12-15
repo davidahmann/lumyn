@@ -459,6 +459,11 @@ dependencies = [
     { name = "ulid-py" },
 ]
 
+[package.optional-dependencies]
+service = [
+    { name = "uvicorn" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "bandit" },
@@ -483,7 +488,9 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.2" },
     { name = "typer", specifier = ">=0.12,<0.20" },
     { name = "ulid-py", specifier = ">=1.1.0" },
+    { name = "uvicorn", marker = "extra == 'service'", specifier = ">=0.30" },
 ]
+provides-extras = ["service"]
 
 [package.metadata.requires-dev]
 dev = [

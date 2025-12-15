@@ -8,6 +8,7 @@ from lumyn.policy.loader import load_policy
 from lumyn.store.sqlite import SqliteStore
 
 from ..util import die, resolve_workspace_paths
+from .init import DEFAULT_POLICY_TEMPLATE, initialize_workspace
 
 app = typer.Typer(help="Check local workspace health.")
 
@@ -16,8 +17,19 @@ app = typer.Typer(help="Check local workspace health.")
 def main(
     *,
     workspace: Path = typer.Option(Path(".lumyn"), "--workspace", help="Workspace directory."),
+    fix: bool = typer.Option(
+        False, "--fix", help="Create/repair missing workspace files (policy + db)."
+    ),
+    policy_template: Path = typer.Option(
+        DEFAULT_POLICY_TEMPLATE,
+        "--policy-template",
+        help="Policy template to copy if policy.yml is missing.",
+    ),
 ) -> None:
     paths = resolve_workspace_paths(workspace)
+    if fix:
+        initialize_workspace(workspace=workspace, policy_template=policy_template, force=False)
+
     if not paths.workspace.exists():
         die(f"workspace not found: {paths.workspace}")
 

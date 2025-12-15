@@ -77,13 +77,17 @@ def _eval_condition(key: str, expected: Any, normalized: NormalizedRequest) -> b
         return bool(_value_from_key(key, normalized)) is expected
 
     if key == "evidence.payment_instrument_risk_is":
-        return bool(_value_from_key(key, normalized) == expected)
+        return bool(_value_from_key("evidence.payment_instrument_risk", normalized) == expected)
     if key == "evidence.payment_instrument_risk_in":
         val = _value_from_key("evidence.payment_instrument_risk", normalized)
         if not isinstance(expected, list):
             return False
         allowed = [v for v in expected if isinstance(v, str)]
         return val in allowed
+
+    if key == "evidence.failure_similarity_score_gte":
+        val = _value_from_key("evidence.failure_similarity_score", normalized)
+        return isinstance(val, int | float) and val >= float(expected)
 
     if key == "evidence.chargeback_risk_gte":
         val = _value_from_key("evidence.chargeback_risk", normalized)

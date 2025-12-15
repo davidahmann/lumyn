@@ -1,0 +1,16 @@
+{
+  "name": "approve_spend_over_limit_escalate",
+  "policy_path": "policies/packs/lumyn-billing.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "service", "id": "billing-bot", "tenant_id": "acme" },
+    "action": {
+      "type": "billing.approve_spend",
+      "intent": "Approve large invoice",
+      "amount": { "value": 2500.0, "currency": "USD" }
+    },
+    "evidence": { "invoice_id": "INV-9001", "vendor_id": "V-88", "requested_by": "bob@acme.com" },
+    "context": { "mode": "digest_only", "digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["SPEND_OVER_APPROVAL_LIMIT"] }
+}

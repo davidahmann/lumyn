@@ -1,0 +1,16 @@
+{
+  "name": "approve_spend_small_trust",
+  "policy_path": "policies/packs/lumyn-billing.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "service", "id": "billing-bot", "tenant_id": "acme" },
+    "action": {
+      "type": "billing.approve_spend",
+      "intent": "Approve small invoice",
+      "amount": { "value": 85.0, "currency": "USD" }
+    },
+    "evidence": { "invoice_id": "INV-1001", "vendor_id": "V-12", "requested_by": "alice@acme.com" },
+    "context": { "mode": "digest_only", "digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555" }
+  },
+  "expect": { "verdict": "TRUST", "reason_codes_includes": ["SPEND_SMALL_OK"] }
+}

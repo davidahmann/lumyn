@@ -1,0 +1,12 @@
+{
+  "schema_version": "decision_request.v0",
+  "subject": { "type": "user", "id": "user-3", "tenant_id": "acme" },
+  "action": { "type": "account.change_email", "intent": "Change account email after reauth" },
+  "evidence": {
+    "user_id": "user-3",
+    "new_email": "new@example.com",
+    "verification_method": "reauth",
+    "account_takeover_risk": 0.12
+  },
+  "context": { "mode": "digest_only", "digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777" }
+}

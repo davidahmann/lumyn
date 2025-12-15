@@ -26,6 +26,10 @@ This creates:
 
 You’ll get a JSON array of `DecisionRecord` objects.
 
+Fastest “aha” (compounding):
+
+`uv run lumyn demo --story`
+
 ## 4) Decide from a request file
 
 Use the curl-ready request example:
@@ -58,11 +62,25 @@ When you learn the real-world result:
 
 This appends a decision event and writes a memory item that can influence similarity on future decisions.
 
+## 6.1) Try another pack (account / billing)
+
+Switch the workspace policy:
+
+`cp policies/packs/lumyn-account.v0.yml .lumyn/policy.yml`
+
+`uv run lumyn decide --in examples/curl/decision_request_change_email.json --pretty`
+
+Switch again:
+
+`cp policies/packs/lumyn-billing.v0.yml .lumyn/policy.yml`
+
+`uv run lumyn decide --in examples/curl/decision_request_approve_spend.json --pretty`
+
 ## 7) Service mode (optional)
 
 Run the API:
 
-`uv run uvicorn --factory lumyn.api.app:create_app --host 127.0.0.1 --port 8000`
+`uv run lumyn serve`
 
 Call it:
 

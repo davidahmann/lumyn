@@ -76,27 +76,36 @@ The MVP ships as:
 
 Install (once published to PyPI):
 - `pip install lumyn`
+- Service mode: `pip install lumyn[service]`
 
 Key CLI workflows:
 - `lumyn init` (creates local SQLite + starter policy)
 - `lumyn demo` (emits a few real-looking Decision Records as JSON)
+- `lumyn demo --story` (auto-label a failure and show compounding)
 - `lumyn decide --in request.json` (prints a Decision Record)
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`, `lumyn export <decision_id>`
 - `lumyn export <decision_id> --pack --out decision_pack.zip`
 - `lumyn replay decision_pack.zip` (validate pack + digests)
 - `lumyn label <decision_id> --label failure --summary "Bad outcome in prod"`
 - `lumyn policy validate` (validates `.lumyn/policy.yml`) or `lumyn policy validate --path ./policy.yml`
-- `lumyn doctor` (workspace health + counts)
+- `lumyn doctor` / `lumyn doctor --fix` (workspace health + repairs)
+- `lumyn serve --dry-run` / `lumyn serve` (run FastAPI service)
 
 Service mode (FastAPI):
 - `uv run python -c "from lumyn.api.app import create_app; app = create_app(); print(app)"` (sanity)
-- Run with Uvicorn: `uv run uvicorn --factory lumyn.api.app:create_app --host 127.0.0.1 --port 8000`
+- Run with Lumyn: `uv run lumyn serve --host 127.0.0.1 --port 8000`
 - Env config: `LUMYN_POLICY_PATH`, `LUMYN_STORAGE_URL` (e.g. `sqlite:.lumyn/lumyn.db`), `LUMYN_MODE`, `LUMYN_REDACTION_PROFILE`, `LUMYN_SIGNING_SECRET`
 - If `LUMYN_SIGNING_SECRET` is set, `POST /v0/decide` requires `X-Lumyn-Signature: sha256:<hmac(body)>` over the exact request body bytes.
 - `GET /v0/policy` returns `{policy_id, policy_version, policy_hash}` for the currently loaded policy.
 
+Policy packs (OSS templates you can copy into `.lumyn/policy.yml`):
+- `policies/lumyn-support.v0.yml` (support/refund + ticket workflows)
+- `policies/packs/lumyn-account.v0.yml` (account change email)
+- `policies/packs/lumyn-billing.v0.yml` (billing approve spend)
+
 Docs:
 - `docs/quickstart.md`
+- `docs/integration_checklist.md`
 
 ## Operational notes (hair-on-fire defaults)
 

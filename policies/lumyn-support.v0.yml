@@ -169,6 +169,14 @@ rules:
       verdict: ESCALATE
       reason_codes: [NEW_CUSTOMER_REFUND_ESCALATE]
 
+  - id: R035
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { evidence.failure_similarity_score_gte: 0.35 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [FAILURE_MEMORY_SIMILAR_ESCALATE]
+
   - id: R034
     stage: ESCALATIONS
     when: { action_type_in: [support.change_plan, support.reset_password] }

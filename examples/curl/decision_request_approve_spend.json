@@ -1,0 +1,11 @@
+{
+  "schema_version": "decision_request.v0",
+  "subject": { "type": "service", "id": "billing-bot", "tenant_id": "acme" },
+  "action": {
+    "type": "billing.approve_spend",
+    "intent": "Approve invoice INV-1001",
+    "amount": { "value": 85.0, "currency": "USD" }
+  },
+  "evidence": { "invoice_id": "INV-1001", "vendor_id": "V-12", "requested_by": "alice@acme.com" },
+  "context": { "mode": "digest_only", "digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888" }
+}

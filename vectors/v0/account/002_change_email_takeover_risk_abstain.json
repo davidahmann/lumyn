@@ -1,0 +1,17 @@
+{
+  "name": "change_email_takeover_risk_abstain",
+  "policy_path": "policies/packs/lumyn-account.v0.yml",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "user", "id": "user-2", "tenant_id": "acme" },
+    "action": { "type": "account.change_email", "intent": "Change account email to attacker-controlled address" },
+    "evidence": {
+      "user_id": "user-2",
+      "new_email": "attacker@example.com",
+      "verification_method": "support",
+      "account_takeover_risk": 0.9
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222" }
+  },
+  "expect": { "verdict": "ABSTAIN", "reason_codes_includes": ["CHANGE_EMAIL_TAKEOVER_RISK_BLOCK"] }
+}

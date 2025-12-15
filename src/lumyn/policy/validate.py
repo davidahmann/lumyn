@@ -28,6 +28,7 @@ SUPPORTED_CONDITION_KEYS = {
     "evidence.customer_age_days_lt",
     "evidence.customer_age_days_gte",
     "evidence.account_takeover_risk_gte",
+    "evidence.failure_similarity_score_gte",
     "evidence.manual_approval_is",
 }
 
