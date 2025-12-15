@@ -207,10 +207,7 @@ Lumyn is not:
 
 ## Docs
 
-- `PRD.md`: what we’re building, for whom, and why
 - `SPECS_SCHEMAS.md`: canonical contracts + determinism rules (v0)
-- `PLAN.md`: epics/stories with acceptance criteria and tests
-- `REPO_STRUCTURE.md`: proposed OSS layout
 - `docs/quickstart.md`
 - `docs/integration_checklist.md`
 - `docs/architecture.md`
