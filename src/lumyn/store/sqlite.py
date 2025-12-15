@@ -66,6 +66,9 @@ class SqliteStore:
         created_at = str(record["created_at"])
 
         request = record.get("request") or {}
+        request_id = (
+            request.get("request_id") if isinstance(request.get("request_id"), str) else None
+        )
         subject = request.get("subject") or {}
         action = request.get("action") or {}
         target = action.get("target") or {}
@@ -107,6 +110,8 @@ class SqliteStore:
 
         record_json = _json_dumps(record)
 
+        tenant_key = tenant_id or "__global__"
+
         with self.connect() as conn:
             conn.execute(
                 """
@@ -144,6 +149,14 @@ class SqliteStore:
                     record_json,
                 ),
             )
+            if request_id is not None:
+                conn.execute(
+                    """
+                    INSERT INTO idempotency_keys (tenant_key, request_id, decision_id, created_at)
+                    VALUES (?, ?, ?, ?)
+                    """,
+                    (tenant_key, request_id, decision_id, created_at),
+                )
 
     def put_policy_snapshot(
         self,
@@ -183,6 +196,16 @@ class SqliteStore:
             if row is None:
                 return None
             return cast(dict[str, Any], json.loads(row["record_json"]))
+
+    def get_decision_id_for_request_id(self, *, tenant_key: str, request_id: str) -> str | None:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT decision_id FROM idempotency_keys WHERE tenant_key = ? AND request_id = ?",
+                (tenant_key, request_id),
+            ).fetchone()
+            if row is None:
+                return None
+            return cast(str, row["decision_id"])
 
     def append_decision_event(self, decision_id: str, event_type: str, data: dict[str, Any]) -> str:
         event_id = str(ulid.new())

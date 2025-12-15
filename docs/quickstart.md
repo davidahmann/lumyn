@@ -34,6 +34,8 @@ Use the curl-ready request example:
 
 Capture the `decision_id` from the output.
 
+Tip (recommended): set `request_id` in your `DecisionRequest` so retries are idempotent.
+
 ## 5) Show / explain / export
 
 `uv run lumyn show <decision_id>`
@@ -41,6 +43,12 @@ Capture the `decision_id` from the output.
 `uv run lumyn explain <decision_id>`
 
 `uv run lumyn export <decision_id> --out decision_record.json`
+
+Create an incident-ready decision pack and validate it:
+
+`uv run lumyn export <decision_id> --pack --out decision_pack.zip`
+
+`uv run lumyn replay decision_pack.zip`
 
 ## 6) Label an outcome (Experience Memory)
 

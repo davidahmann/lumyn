@@ -83,6 +83,7 @@ Key CLI workflows:
 - `lumyn decide --in request.json` (prints a Decision Record)
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`, `lumyn export <decision_id>`
 - `lumyn export <decision_id> --pack --out decision_pack.zip`
+- `lumyn replay decision_pack.zip` (validate pack + digests)
 - `lumyn label <decision_id> --label failure --summary "Bad outcome in prod"`
 - `lumyn policy validate` (validates `.lumyn/policy.yml`) or `lumyn policy validate --path ./policy.yml`
 - `lumyn doctor` (workspace health + counts)
@@ -96,6 +97,11 @@ Service mode (FastAPI):
 
 Docs:
 - `docs/quickstart.md`
+
+## Operational notes (hair-on-fire defaults)
+
+- **Idempotency**: set `request_id` on `DecisionRequest` so retries return the same stored decision.
+- **Storage safety**: if persistence is unavailable, Lumyn returns a schema-valid `ABSTAIN` record with `STORAGE_UNAVAILABLE` (so callers can safely block write-path actions).
 
 ## Documentation
 

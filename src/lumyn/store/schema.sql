@@ -62,3 +62,14 @@ CREATE TABLE IF NOT EXISTS policy_snapshots (
 );
 
 CREATE INDEX IF NOT EXISTS idx_policy_snapshots_created_at ON policy_snapshots (created_at);
+
+CREATE TABLE IF NOT EXISTS idempotency_keys (
+  tenant_key TEXT NOT NULL,
+  request_id TEXT NOT NULL,
+  decision_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  PRIMARY KEY (tenant_key, request_id),
+  FOREIGN KEY (decision_id) REFERENCES decisions(decision_id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_idempotency_keys_created_at ON idempotency_keys (created_at);
