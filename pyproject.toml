@@ -1,6 +1,6 @@
 [project]
 name = "lumyn"
-version = "0.1.0"
+version = "1.0.0"
 description = "Decision Records for production AI."
 readme = "README.md"
 requires-python = ">=3.11"
