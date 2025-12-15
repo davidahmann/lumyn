@@ -301,25 +301,28 @@ def decide(
     *,
     config: LumynConfig | None = None,
     store: SqliteStore | None = None,
+    loaded_policy: LoadedPolicy | None = None,
 ) -> dict[str, Any]:
     cfg = config or LumynConfig()
-    # Load policy once to determine version
-    try:
-        loaded = load_policy(cfg.policy_path)
-    except Exception:
-        # If loading fails, let v0 handle it (or fail inside v0 path)
-        # But v0 path creates defaults if missing?
-        # Actually load_policy raises if file missing/invalid.
-        # But decide_v0 handles FileNotFoundError?
-        # No, decide_v0 calls load_policy which expects file handling.
-        # Let's just raise here if it fails, consistent with previous behavior.
-        raise
 
-    version = loaded.policy.get("schema_version", "policy.v0")
+    if loaded_policy is None:
+        # Load policy once to determine version
+        try:
+            loaded_policy = load_policy(cfg.policy_path)
+        except Exception:
+            # If loading fails, let v0 handle it (or fail inside v0 path)
+            # But v0 path creates defaults if missing?
+            # Actually load_policy raises if file missing/invalid.
+            # But decide_v0 handles FileNotFoundError?
+            # No, decide_v0 calls load_policy which expects file handling.
+            # Let's just raise here if it fails, consistent with previous behavior.
+            raise
+
+    version = loaded_policy.policy.get("schema_version", "policy.v0")
     if version.startswith("policy.v1"):
-        return decide_v1(request, config=config, store=store, loaded_policy=loaded)
+        return decide_v1(request, config=config, store=store, loaded_policy=loaded_policy)
     else:
-        return decide_v0(request, config=config, store=store, loaded_policy=loaded)
+        return decide_v0(request, config=config, store=store, loaded_policy=loaded_policy)
 
 
 def decide_v1(
