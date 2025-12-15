@@ -1,0 +1,38 @@
+{
+    "name": "v1_abstain_high_risk",
+    "request": {
+        "schema_version": "decision_request.v1",
+        "request_id": "req_004",
+        "tenant": {
+            "tenant_id": "t1"
+        },
+        "subject": {
+            "type": "user",
+            "id": "u1"
+        },
+        "action": {
+            "type": "support.refund",
+            "intent": "risky refund",
+            "amount": {
+                "value": 20.0,
+                "currency": "USD"
+            }
+        },
+        "context": {
+            "mode": "digest_only",
+            "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "evidence": {
+            "ticket_id": "t1",
+            "order_id": "o1",
+            "customer_id": "c1",
+            "payment_instrument_risk": "high"
+        }
+    },
+    "expect": {
+        "verdict": "ABSTAIN",
+        "reason_codes": [
+            "PAYMENT_INSTRUMENT_HIGH_RISK"
+        ]
+    }
+}

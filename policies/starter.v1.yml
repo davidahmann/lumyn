@@ -1,0 +1,106 @@
+schema_version: policy.v1
+policy_id: starter-policy
+policy_version: "1.0.0"
+
+defaults:
+  mode: enforce
+  default_verdict: ESCALATE
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
+
+rules:
+  # Requirements: Validate input presence explicitly (no magic)
+  # R001-R006: Check for missing evidence.
+  # V1 design: Use explicit `if` to check for null (missing) evidence.
+  
+  - id: R001
+    stage: REQUIREMENTS
+    when: { action_type: support.refund }
+    if_any:
+      - { evidence.ticket_id_is: null }
+      - { evidence.order_id_is: null }
+      - { evidence.customer_id_is: null }
+    then:
+      verdict: DENY
+      reason_codes: [MISSING_EVIDENCE_REFUND]
+      queries:
+        - field: evidence.ticket_id
+          question: ticket_id is required
+        - field: evidence.order_id
+          question: order_id is required
+        - field: evidence.customer_id
+          question: customer_id is required
+
+  - id: R007
+    stage: REQUIREMENTS
+    when: { action_type: support.refund }
+    if_all:
+      - { amount_currency_ne: USD }
+      - { evidence.fx_rate_to_usd_is: null }
+    then:
+      verdict: DENY
+      reason_codes: [MISSING_FX_RATE]
+      queries:
+        - field: evidence.fx_rate_to_usd
+          question: Provide fx_rate_to_usd to evaluate amount_usd.
+  # Hard blocks - Sanctions / High Risk
+  - id: R020
+    stage: HARD_BLOCKS
+    when: { action_type: support.refund } 
+    # v1 when doesn't support 'action_type_in' yet? "when: optional predicate (e.g., action_type: withdrawal)"
+    # I should stick to simple matches or add support. R020 used action_type_in.
+    # I can split into multiple rules or add support. Splitting is safer for V1 MVP strictness.
+    if: { evidence.payment_instrument_risk_is: high }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [PAYMENT_INSTRUMENT_HIGH_RISK]
+
+  - id: R020b
+    stage: HARD_BLOCKS
+    when: { action_type: support.issue_credit }
+    if: { evidence.payment_instrument_risk_is: high }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [PAYMENT_INSTRUMENT_HIGH_RISK]
+
+  - id: R022
+    stage: HARD_BLOCKS
+    when: { action_type: support.refund }
+    if: { evidence.chargeback_risk_gte: 0.70 }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [CHARGEBACK_RISK_BLOCK]
+
+  # Escalations
+  - id: R030
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { amount_usd_gt: 200 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [REFUND_OVER_ESCALATION_LIMIT]
+
+  - id: R031
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { evidence.previous_refund_count_90d_gte: 2 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [REFUND_REPEAT_CUSTOMER]
+
+  # Trust Paths
+  - id: R050
+    stage: ALLOW_PATHS
+    when: { action_type: support.refund }
+    if_all:
+      - { amount_usd_lte: 25 }
+      - { evidence.payment_instrument_risk_in: [low, medium] }
+      - { evidence.chargeback_risk_lt: 0.35 }
+      - { evidence.previous_refund_count_90d_lt: 2 }
+      - { evidence.customer_age_days_gte: 14 }
+    then:
+      verdict: ALLOW
+      reason_codes: [REFUND_SMALL_LOW_RISK]
+      obligations:
+        - type: check
+          title: Verify ticket exists
+          details: Confirm the support ticket_id exists.

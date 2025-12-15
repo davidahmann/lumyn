@@ -10,6 +10,7 @@ from .commands import explain as explain_cmd
 from .commands import export as export_cmd
 from .commands import init as init_cmd
 from .commands import label as label_cmd
+from .commands import migrate as migrate_cmd
 from .commands import policy as policy_cmd
 from .commands import replay as replay_cmd
 from .commands import serve as serve_cmd
@@ -40,6 +41,7 @@ app.command("replay")(replay_cmd.main)
 app.command("label")(label_cmd.main)
 app.add_typer(policy_cmd.app, name="policy")
 app.command("convert")(convert_cmd.main)
+app.command("migrate")(migrate_cmd.main)
 app.command("doctor")(doctor_cmd.main)
 app.command("serve")(serve_cmd.main)
 

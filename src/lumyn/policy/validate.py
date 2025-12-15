@@ -33,6 +33,20 @@ SUPPORTED_CONDITION_KEYS = {
     "evidence.manual_approval_is",
 }
 
+# v1 Strict Keys
+V1_SUPPORTED_KEYS = {
+    "action_type",
+    "amount_currency",
+    "amount_currency_ne",
+    "amount_usd",
+    "amount_usd_gt",
+    "amount_usd_gte",
+    "amount_usd_lt",
+    "amount_usd_lte",
+}
+
+V1_EVIDENCE_SUFFIXES = {"_is", "_ne", "_in", "_gt", "_gte", "_lt", "_lte"}
+
 
 @dataclass(frozen=True, slots=True)
 class PolicyValidationResult:
@@ -49,6 +63,42 @@ def _validate_rule_expr(rule_id: str, expr: Any, errors: list[str]) -> None:
     for key in expr.keys():
         if key not in SUPPORTED_CONDITION_KEYS:
             errors.append(f"rule {rule_id}: unsupported condition key: {key}")
+
+
+def _validate_v1_rule_expr(rule_id: str, expr: Any, errors: list[str]) -> None:
+    if expr is None:
+        return
+    if not isinstance(expr, Mapping):
+        errors.append(f"rule {rule_id}: expression must be an object")
+        return
+    for key in expr.keys():
+        if key in V1_SUPPORTED_KEYS:
+            continue
+
+        if key.startswith("evidence."):
+            # Check suffix
+            # e.g. evidence.foo_bar_gt
+            parts = key.rsplit("_", 1)
+            if len(parts) == 2:
+                suffix = "_" + parts[1]
+                if suffix in V1_EVIDENCE_SUFFIXES:
+                    continue
+
+            # Special case for exact match on 'evidence.<key>'?
+            # v1 spec says explicit operators preferred, but evaluator supports raw lookup (danger).
+            # Let's be strict: MUST use operator suffix or be in allowlist.
+            # But wait, what if the key is just 'evidence.foo'? Evaluator returns values.
+            # Evaluator `_eval_condition` returns False if no operator matches, EXCEPT...
+            # Wait, `_eval_condition` in v1 checks suffixes.
+            # If key starts with evidence, it splits by `_`.
+
+            errors.append(
+                f"rule {rule_id}: unsupported condition key: {key} "
+                f"(must end in {', '.join(V1_EVIDENCE_SUFFIXES)})"
+            )
+            continue
+
+        errors.append(f"rule {rule_id}: unsupported condition key: {key}")
 
 
 def _validate_when(rule_id: str, when: Any, errors: list[str]) -> None:
@@ -122,19 +172,83 @@ def validate_policy_v0(
     return PolicyValidationResult(ok=(len(errors) == 0), errors=errors)
 
 
+def validate_policy_v1(
+    policy: Mapping[str, Any],
+    *,
+    policy_schema: Mapping[str, Any] | None = None,
+) -> PolicyValidationResult:
+    errors: list[str] = []
+
+    # Schema loading logic placeholder
+    pass
+
+    if policy_schema:
+        validator = Draft202012Validator(policy_schema)
+        for err in sorted(validator.iter_errors(policy), key=str):
+            errors.append(err.message)
+    else:
+        # Fallback load? Or assume caller handles schema validation?
+        # Let's stick to logic validation for now and assume schema passed.
+        pass
+
+    # v1 Reason codes: Is there a controlled vocabulary?
+    # Spec says: "Reason codes are strings." No strict enum enforcement in v1.0.0 (open world).
+
+    rules = policy.get("rules", [])
+    if isinstance(rules, list):
+        for rule in rules:
+            if not isinstance(rule, Mapping):
+                continue  # Schema catches this
+
+            rule_id = str(rule.get("id", "<missing id>"))
+
+            # When
+            _validate_when(rule_id, rule.get("when"), errors)
+
+            # Conditions
+            _validate_v1_rule_expr(rule_id, rule.get("if"), errors)
+
+            if_all = rule.get("if_all")
+            if isinstance(if_all, list):
+                for expr in if_all:
+                    _validate_v1_rule_expr(rule_id, expr, errors)
+
+            if_any = rule.get("if_any")
+            if isinstance(if_any, list):
+                for expr in if_any:
+                    _validate_v1_rule_expr(rule_id, expr, errors)
+
+            # Obligations check?
+            # Schema handles structure.
+
+    return PolicyValidationResult(ok=(len(errors) == 0), errors=errors)
+
+
 def validate_policy_or_raise(
     policy: Mapping[str, Any],
     *,
     policy_schema_path: str | Path,
-    reason_codes_path: str | Path,
+    reason_codes_path: str | Path | None = None,
 ) -> None:
     policy_schema = load_json_schema(policy_schema_path)
-    reason_codes_doc = load_json_schema(reason_codes_path)
-    known_reason_codes = [item["code"] for item in reason_codes_doc.get("codes", [])]
 
-    result = validate_policy_v0(
-        policy, policy_schema=policy_schema, known_reason_codes=known_reason_codes
-    )
+    schema_version = policy.get("schema_version", "policy.v0")
+
+    if schema_version.startswith("policy.v1"):
+        result = validate_policy_v1(policy, policy_schema=policy_schema)
+    else:
+        # v0 logic
+        if not reason_codes_path:
+            # Should not happen for v0 defaults
+            raise PolicyError("Reason codes path required for v0 validation")
+
+        reason_codes_doc = load_json_schema(reason_codes_path)
+        known_reason_codes = [item["code"] for item in reason_codes_doc.get("codes", [])]
+
+        result = validate_policy_v0(
+            policy, policy_schema=policy_schema, known_reason_codes=known_reason_codes
+        )
+
     if result.ok:
         return
     raise PolicyError("invalid policy:\n- " + "\n- ".join(result.errors))

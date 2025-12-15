@@ -1,0 +1,35 @@
+{
+    "name": "v1_deny_missing_evidence",
+    "request": {
+        "schema_version": "decision_request.v1",
+        "request_id": "req_002",
+        "tenant": {
+            "tenant_id": "t1"
+        },
+        "subject": {
+            "type": "user",
+            "id": "u1"
+        },
+        "action": {
+            "type": "support.refund",
+            "intent": "refund missing ticket",
+            "amount": {
+                "value": 20.0,
+                "currency": "USD"
+            }
+        },
+        "context": {
+            "mode": "digest_only",
+            "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "evidence": {
+            "order_id": "o1"
+        }
+    },
+    "expect": {
+        "verdict": "DENY",
+        "reason_codes": [
+            "MISSING_EVIDENCE_REFUND"
+        ]
+    }
+}

@@ -20,9 +20,8 @@ app = typer.Typer(help="Evaluate a DecisionRequest and emit a DecisionRecord.")
 def main(
     *,
     workspace: Path = typer.Option(Path(".lumyn"), "--workspace", help="Workspace directory."),
-    input_path: Path = typer.Option(
+    input_path: Path = typer.Argument(
         Path("-"),
-        "--in",
         help="DecisionRequest JSON path (or '-' for stdin).",
     ),
     out: Path = typer.Option(Path("-"), "--out", help="Output path (or '-' for stdout)."),

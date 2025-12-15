@@ -11,7 +11,7 @@ from ..util import die, resolve_workspace_paths
 
 app = typer.Typer(help="Initialize a local Lumyn workspace.")
 
-DEFAULT_POLICY_TEMPLATE = Path("policies/lumyn-support.v0.yml")
+DEFAULT_POLICY_TEMPLATE = Path("policies/starter.v1.yml")
 
 
 def initialize_workspace(*, workspace: Path, policy_template: Path, force: bool) -> None:

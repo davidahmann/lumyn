@@ -8,8 +8,7 @@ from jsonschema import Draft202012Validator
 from jsonschema.exceptions import ValidationError
 
 from lumyn.api.auth import require_hmac_signature
-from lumyn.core.decide import LumynConfig, decide
-from lumyn.migrate.v0_v1 import decision_record_v0_to_v1
+from lumyn.core.decide import LumynConfig, decide_v1
 from lumyn.schemas.loaders import load_json_schema
 from lumyn.store.sqlite import SqliteStore
 from lumyn.telemetry.tracing import start_span
@@ -20,12 +19,6 @@ class ApiV1Deps:
     config: LumynConfig
     store: SqliteStore
     signing_secret: str | None = None
-
-
-def _decision_request_v1_to_v0(payload: dict[str, Any]) -> dict[str, Any]:
-    out = dict(payload)
-    out["schema_version"] = "decision_request.v0"
-    return out
 
 
 def build_routes_v1(*, deps: ApiV1Deps) -> APIRouter:
@@ -45,12 +38,12 @@ def build_routes_v1(*, deps: ApiV1Deps) -> APIRouter:
                 )
             try:
                 request_validator.validate(payload)
-                record_v0 = decide(
-                    _decision_request_v1_to_v0(payload),
+                record_v1 = decide_v1(
+                    payload,
                     config=deps.config,
                     store=deps.store,
                 )
-                return decision_record_v0_to_v1(record_v0)
+                return record_v1
             except ValidationError as e:
                 raise HTTPException(
                     status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(e.message)

@@ -18,7 +18,7 @@ app = typer.Typer(help="Run a local demo (creates multiple Decision Records).")
 def _demo_requests() -> list[dict[str, Any]]:
     return [
         {
-            "schema_version": "decision_request.v0",
+            "schema_version": "decision_request.v1",
             "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
             "action": {
                 "type": "support.refund",
@@ -34,7 +34,7 @@ def _demo_requests() -> list[dict[str, Any]]:
             },
         },
         {
-            "schema_version": "decision_request.v0",
+            "schema_version": "decision_request.v1",
             "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
             "action": {
                 "type": "support.refund",
@@ -49,7 +49,7 @@ def _demo_requests() -> list[dict[str, Any]]:
             },
         },
         {
-            "schema_version": "decision_request.v0",
+            "schema_version": "decision_request.v1",
             "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
             "action": {"type": "support.update_ticket", "intent": "Update ticket ZD-4002"},
             "evidence": {"ticket_id": "ZD-4002"},
