@@ -4,7 +4,9 @@ from lumyn import LumynConfig, decide
 
 
 def main() -> None:
-    cfg = LumynConfig(policy_path="policies/packs/lumyn-billing.v0.yml", store_path=".lumyn/lumyn.db")
+    cfg = LumynConfig(
+        policy_path="policies/packs/lumyn-billing.v0.yml", store_path=".lumyn/lumyn.db"
+    )
     request = {
         "schema_version": "decision_request.v0",
         "subject": {"type": "service", "id": "billing-bot", "tenant_id": "acme"},
@@ -13,7 +15,11 @@ def main() -> None:
             "intent": "Approve invoice INV-1001",
             "amount": {"value": 85.0, "currency": "USD"},
         },
-        "evidence": {"invoice_id": "INV-1001", "vendor_id": "V-12", "requested_by": "alice@acme.com"},
+        "evidence": {
+            "invoice_id": "INV-1001",
+            "vendor_id": "V-12",
+            "requested_by": "alice@acme.com",
+        },
         "context": {
             "mode": "digest_only",
             "digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",

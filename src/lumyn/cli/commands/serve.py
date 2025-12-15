@@ -43,15 +43,17 @@ def main(
     if dry_run:
         typer.echo(
             "uvicorn --factory lumyn.api.app:create_app "
-            f"--host {host} --port {port}"
-            + (" --reload" if reload else "")
+            f"--host {host} --port {port}" + (" --reload" if reload else "")
         )
         return
 
     try:
         import uvicorn  # type: ignore[import-not-found]
     except Exception:
-        die("uvicorn not installed; install with `pip install uvicorn` (or `pip install lumyn[service]`).")
+        die(
+            "uvicorn not installed; install with `pip install uvicorn` "
+            "(or `pip install lumyn[service]`)."
+        )
 
     uvicorn.run(
         "lumyn.api.app:create_app",

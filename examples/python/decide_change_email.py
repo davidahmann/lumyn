@@ -4,7 +4,9 @@ from lumyn import LumynConfig, decide
 
 
 def main() -> None:
-    cfg = LumynConfig(policy_path="policies/packs/lumyn-account.v0.yml", store_path=".lumyn/lumyn.db")
+    cfg = LumynConfig(
+        policy_path="policies/packs/lumyn-account.v0.yml", store_path=".lumyn/lumyn.db"
+    )
     request = {
         "schema_version": "decision_request.v0",
         "subject": {"type": "user", "id": "user-3", "tenant_id": "acme"},
