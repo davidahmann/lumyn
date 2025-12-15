@@ -2,10 +2,7 @@
 
 **Decision Records for production AI.**
 
-Lumyn is a deterministic `decide()` gateway for AI systems that take real actions (refunds,
-ticket operations, account changes). Instead of "the model said so," Lumyn returns a
-verdict — `ALLOW | ABSTAIN | ESCALATE | DENY` — and writes a durable **Decision Record**
-you can export, replay, and verify under incident pressure.
+Lumyn is a deterministic `decide()` gateway for AI agents. It enforces strict policies, returns explicit verdicts (`ALLOW`, `DENY`, `ESCALATE`, `ABSTAIN`), and writes durable **Decision Records** for instant incident replay.
 
 > [!NOTE]
 > **v1.0.0 Stable**: This documentation covers the v1 engine. For legacy v0 documentation, see [Legacy Specs](SPECS_SCHEMAS.md#legacy-specs-v0).
