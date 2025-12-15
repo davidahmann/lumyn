@@ -1,0 +1,31 @@
+# Local scratch/internal notes
+scratchpad/
+internal_docs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.so
+.Python
+build/
+dist/
+.eggs/
+*.egg-info/
+
+# Virtualenvs / uv
+.venv/
+.python-version
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Tooling
+.mypy_cache/
+.ruff_cache/
+.cache/
+
+# OS
+.DS_Store
