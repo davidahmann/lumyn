@@ -76,11 +76,16 @@ The MVP ships as:
 
 Key CLI workflows:
 - `lumyn init` (creates local SQLite + starter policy)
-- `lumyn demo` (emits a few real-looking Decision Records)
+- `lumyn demo` (emits a few real-looking Decision Records as JSON)
 - `lumyn decide --in request.json` (prints a Decision Record)
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`, `lumyn export <decision_id>`
-- `lumyn label <decision_id> --failure|--success --note "..."`
-- `lumyn policy validate ./lumyn-policy.yml`
+- `lumyn label <decision_id> --label failure --summary "Bad outcome in prod"`
+- `lumyn policy validate` (validates `.lumyn/policy.yml`) or `lumyn policy validate --path ./policy.yml`
+- `lumyn doctor` (workspace health + counts)
+
+Service mode (FastAPI):
+- `uv run python -c "from lumyn.api.app import create_app; app = create_app(); print(app)"` (sanity)
+- Run with Uvicorn: `uv run uvicorn --factory lumyn.api.app:create_app --host 127.0.0.1 --port 8000`
 
 ## Documentation
 

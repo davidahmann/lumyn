@@ -36,6 +36,13 @@ class MemoryItem:
     source_decision_id: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class StoreStats:
+    decisions: int
+    decision_events: int
+    memory_items: int
+
+
 class SqliteStore:
     def __init__(self, path: str | Path) -> None:
         self._path = Path(path)
@@ -272,3 +279,10 @@ class SqliteStore:
                 )
             )
         return items
+
+    def get_stats(self) -> StoreStats:
+        with self.connect() as conn:
+            decisions = int(conn.execute("SELECT COUNT(*) FROM decisions").fetchone()[0])
+            events = int(conn.execute("SELECT COUNT(*) FROM decision_events").fetchone()[0])
+            memory = int(conn.execute("SELECT COUNT(*) FROM memory_items").fetchone()[0])
+        return StoreStats(decisions=decisions, decision_events=events, memory_items=memory)
