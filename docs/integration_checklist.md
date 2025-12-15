@@ -5,48 +5,24 @@ Use this before you roll Lumyn into a real write-path.
 ## 1) Install + sanity
 
 - `pip install lumyn`
-- `lumyn --help`
+- `lumyn init` (creates `.lumyn/`)
 
-## 2) Create/repair workspace
+## 2) Validate your request template (v1)
 
-- `lumyn doctor --fix`
+Ensure your app generates valid `decision_request.v1` JSON.
 
-## 3) Pick a policy pack (optional)
+`python - <<'PY'\nimport json\nfrom jsonschema import Draft202012Validator\nfrom lumyn.schemas.loaders import load_json_schema\nschema = load_json_schema('schemas/decision_request.v1.schema.json')\nreq = json.load(open('request.json', encoding='utf-8'))\nDraft202012Validator(schema).validate(req)\nprint('ok')\nPY`
 
-Default pack: `policies/lumyn-support.v0.yml` (refunds + ticket operations).
+## 3) Dry-run locally
 
-To switch packs locally:
-- `lumyn init --workspace .lumyn-account --policy-template policies/packs/lumyn-account.v0.yml`
-- `lumyn init --workspace .lumyn-billing --policy-template policies/packs/lumyn-billing.v0.yml`
+- `lumyn decide request.json --pretty`
 
-Validate:
-- `lumyn policy validate --workspace .lumyn-account`
+## 4) Incident Readiness
 
-## 4) Validate your request template against schema
+- Verify you can allow/block via `policy.yml` edits.
+- Verify `lumyn replay` works on exported zips.
 
-Example (replace `request.json` with your file):
+## 5) Service mode (optional)
 
-`python - <<'PY'\nimport json\nfrom jsonschema import Draft202012Validator\nfrom lumyn.schemas.loaders import load_json_schema\nschema = load_json_schema('schemas/decision_request.v0.schema.json')\nreq = json.load(open('request.json', encoding='utf-8'))\nDraft202012Validator(schema).validate(req)\nprint('ok')\nPY`
-
-## 5) Run a dry-run decision and store it
-
-- `lumyn decide --in request.json --pretty`
-- Capture `decision_id`, then: `lumyn show <decision_id>`
-
-## 6) Incident flow (export + replay verify)
-
-- `lumyn export <decision_id> --pack --out decision_pack.zip`
-- `lumyn replay decision_pack.zip`
-
-## 7) Experience Memory (compounding)
-
-- `lumyn demo --story`
-
-## 8) Service mode (optional)
-
-- `lumyn serve --dry-run`
 - `lumyn serve`
-
-Optional request signing:
-- Set `LUMYN_SIGNING_SECRET`
-- Send `X-Lumyn-Signature: sha256:<hmac(body_bytes)>` over the exact bytes you send
+- `curl -X POST http://localhost:8000/v1/decide ...`

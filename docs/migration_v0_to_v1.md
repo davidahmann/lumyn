@@ -1,48 +1,28 @@
-## Migration: v0 → v1 (preview)
+# Migration: v0 → v1
 
-Lumyn `v0` is the current stable contract. `v1` in this repo is a **preview** of a future stable
-API/contract. This guide explains what changes, what stays stable, and how to migrate artifacts.
+Lumyn `v1` is the current stable contract. `v0` is legacy/deprecated.
 
-## What changes in v1
+## Major Changes
+- **Verdicts**: `TRUST` removed (use `ALLOW`). `QUERY` removed (use `DENY` or `ABSTAIN` depending on intent).
+- **Digests**: `inputs_digest` calculation changed to be more robust.
+- **Strictness**: `policy.v1` validation fails if you use unknown keys.
 
-- Verdict model becomes the four-outcome operator model:
-  - `ALLOW | DENY | ABSTAIN | ESCALATE`
-- Schemas exist as new contracts:
-  - `decision_request.v1`
-  - `decision_record.v1`
-  - `policy.v1` (not yet the default starter policy)
+## Migration Guide
 
-## v0 → v1 mapping rules (today)
+### 1. Migrate Policy
+Run the automated migration tool:
 
-When converting stored artifacts, Lumyn uses these rules:
+`lumyn migrate policies/my-legacy.v0.yml --out policies/my-policy.v1.yml`
 
-- `TRUST` → `ALLOW`
-- `ESCALATE` → `ESCALATE`
-- `ABSTAIN` → `ABSTAIN`
-- `QUERY` → `DENY` (deny-until-evidence; `DecisionRecord.queries` remains the source of required fields)
+This will:
+- Rename actions/verdicts (TRUST -> ALLOW).
+- Check for unsupported keys.
+- Update schema version.
 
-## Convert a DecisionRecord JSON
+### 2. Update Application Code
+Change your JSON request generation:
+- Set `schema_version` to `decision_request.v1`.
+- Update your verdict handling logic (`if verdict == "ALLOW": ...`).
 
-Convert a stored record export:
-
-`lumyn convert decision_record.json --to v1 --out decision_record.v1.json`
-
-## Convert a decision pack ZIP
-
-Convert an exported decision pack:
-
-`lumyn convert decision_pack.zip --to v1 --out decision_pack_v1.zip`
-
-## Replay a v1 pack
-
-`lumyn replay` accepts both v0 and v1 packs:
-
-`lumyn replay decision_pack_v1.zip`
-
-### Digest note (v1 preview)
-
-In the current preview, `/v1/decide` is implemented as a wrapper around the v0 engine.
-`determinism.inputs_digest` is therefore computed using the v0-equivalent request (the same request
-with `schema_version` treated as `decision_request.v0`).
-
-This makes v0→v1 converted packs replayable without changing the underlying decision semantics.
+### 3. Verify
+Run `lumyn policy validate --workspace .` to ensure the new policy is strictly valid.
