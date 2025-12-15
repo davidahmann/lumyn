@@ -3,9 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 
-def _truncate_lines(
-    lines: list[str], *, max_lines: int = 40, max_chars: int = 4000
-) -> list[str]:
+def _truncate_lines(lines: list[str], *, max_lines: int = 40, max_chars: int = 4000) -> list[str]:
     if max_lines <= 0 or max_chars <= 0:
         return []
 
@@ -83,4 +81,3 @@ def render_ticket_summary_markdown(
 
     lines = _truncate_lines(lines)
     return "\n".join(lines) + "\n"
-

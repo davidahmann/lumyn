@@ -46,4 +46,3 @@ In the current preview, `/v1/decide` is implemented as a wrapper around the v0 e
 with `schema_version` treated as `decision_request.v0`).
 
 This makes v0→v1 converted packs replayable without changing the underlying decision semantics.
-

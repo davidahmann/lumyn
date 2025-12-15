@@ -20,8 +20,60 @@
       }
     },
     "thresholds": { "type": "object", "additionalProperties": true, "default": {} },
-    "required_evidence": { "type": "object", "additionalProperties": { "type": "array", "items": { "type": "string" } }, "default": {} },
-    "rules": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": true } },
+    "required_evidence": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } },
+      "default": {}
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "stage", "then"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "stage": {
+            "type": "string",
+            "enum": ["REQUIREMENTS", "HARD_BLOCKS", "ESCALATIONS", "ALLOW_PATHS"]
+          },
+          "when": { "type": "object", "additionalProperties": true },
+          "if": { "type": "object", "additionalProperties": true },
+          "if_all": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "if_any": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "then": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["verdict", "reason_codes"],
+            "properties": {
+              "verdict": { "type": "string", "enum": ["ALLOW", "DENY", "ABSTAIN", "ESCALATE"] },
+              "reason_codes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "queries": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+              "obligations": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["check", "required_evidence", "rollback_hint", "rate_limit", "log"]
+                    },
+                    "title": { "type": "string" },
+                    "details": { "type": "string" },
+                    "fields": { "type": "array", "items": { "type": "string" } },
+                    "severity": { "type": "string", "enum": ["info", "warning", "critical"] }
+                  }
+                },
+                "default": []
+              }
+            }
+          }
+        }
+      }
+    },
     "extensions": { "type": "object", "additionalProperties": true, "default": {} }
   }
 }

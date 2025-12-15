@@ -118,8 +118,12 @@
     },
     "hints": {
       "type": "object",
-      "additionalProperties": true,
-      "default": {}
-    }
+      "additionalProperties": false,
+      "properties": {
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] },
+        "dry_run": { "type": "boolean", "default": false }
+      }
+    },
+    "extensions": { "type": "object", "additionalProperties": true, "default": {} }
   }
 }

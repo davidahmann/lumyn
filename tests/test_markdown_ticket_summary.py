@@ -15,8 +15,8 @@ def test_markdown_ticket_summary_is_capped(tmp_path: Path) -> None:
     obligations = "\n".join(
         [
             "        - type: check",
-            "          title: \"Confirm action preconditions\"",
-            "          details: \"Ensure required systems are reachable and inputs are validated.\"",
+            '          title: "Confirm action preconditions"',
+            '          details: "Ensure required systems are reachable and inputs are validated."',
         ]
         * 80
     )
@@ -24,7 +24,7 @@ def test_markdown_ticket_summary_is_capped(tmp_path: Path) -> None:
         [
             "schema_version: policy.v0",
             "policy_id: test-policy",
-            "policy_version: \"0.1.0\"",
+            'policy_version: "0.1.0"',
             "",
             "defaults:",
             "  mode: enforce",
@@ -98,4 +98,3 @@ def test_markdown_ticket_summary_is_capped(tmp_path: Path) -> None:
 
     assert len(lines) <= 40
     assert any("truncated" in line for line in lines)
-

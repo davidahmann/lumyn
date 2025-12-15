@@ -11,7 +11,10 @@
     "trace": {
       "type": "object",
       "additionalProperties": false,
-      "properties": { "correlation_id": { "type": "string" }, "span_id": { "type": "string" } }
+      "properties": {
+        "correlation_id": { "type": "string" },
+        "span_id": { "type": "string" }
+      }
     },
     "tenant": {
       "type": "object",
@@ -40,14 +43,38 @@
       "additionalProperties": false,
       "required": ["type", "intent"],
       "properties": {
-        "type": { "type": "string", "pattern": "^[a-z0-9]+(\\.[a-z0-9_]+)+$" },
+        "type": {
+          "type": "string",
+          "description": "Namespaced action type, e.g. support.refund, support.close_ticket.",
+          "pattern": "^[a-z0-9]+(\\.[a-z0-9_]+)+$"
+        },
         "intent": { "type": "string", "minLength": 1 },
-        "target": { "type": "object", "additionalProperties": false, "properties": { "system": { "type": "string" }, "resource_type": { "type": "string" }, "resource_id": { "type": "string" } } },
-        "amount": { "type": "object", "additionalProperties": false, "properties": { "value": { "type": "number" }, "currency": { "type": "string", "minLength": 3, "maxLength": 3 } } },
+        "target": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "system": { "type": "string" },
+            "resource_type": { "type": "string" },
+            "resource_id": { "type": "string" }
+          }
+        },
+        "amount": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "value": { "type": "number" },
+            "currency": { "type": "string", "minLength": 3, "maxLength": 3 }
+          }
+        },
         "tags": { "type": "array", "items": { "type": "string" }, "default": [] }
       }
     },
-    "evidence": { "type": "object", "additionalProperties": true, "default": {} },
+    "evidence": {
+      "type": "object",
+      "description": "Caller-provided structured signals; Lumyn does not fetch external data in v1.",
+      "additionalProperties": true,
+      "default": {}
+    },
     "context": {
       "type": "object",
       "additionalProperties": false,
@@ -55,16 +82,40 @@
       "properties": {
         "mode": { "type": "string", "enum": ["digest_only", "inline", "reference"] },
         "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-        "ref": { "type": "object", "additionalProperties": false, "required": ["kind", "id"], "properties": { "kind": { "type": "string" }, "id": { "type": "string" }, "uri": { "type": "string" } } },
+        "ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "id"],
+          "properties": {
+            "kind": { "type": "string" },
+            "id": { "type": "string" },
+            "uri": { "type": "string" }
+          }
+        },
         "inline": { "type": "object", "additionalProperties": true },
-        "redaction": { "type": "object", "additionalProperties": false, "properties": { "profile": { "type": "string" }, "fields_removed": { "type": "array", "items": { "type": "string" }, "default": [] } } }
+        "redaction": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "profile": { "type": "string", "description": "default|strict|off" },
+            "fields_removed": { "type": "array", "items": { "type": "string" }, "default": [] }
+          }
+        }
       },
       "allOf": [
         { "if": { "properties": { "mode": { "const": "inline" } } }, "then": { "required": ["inline"] } },
         { "if": { "properties": { "mode": { "const": "reference" } } }, "then": { "required": ["ref"] } }
       ]
     },
-    "policy": { "type": "object", "additionalProperties": false, "properties": { "policy_id": { "type": "string" }, "policy_version": { "type": "string" }, "mode": { "type": "string", "enum": ["enforce", "advisory"] } } },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy_id": { "type": "string" },
+        "policy_version": { "type": "string" },
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] }
+      }
+    },
     "hints": {
       "type": "object",
       "additionalProperties": false,
@@ -72,7 +123,8 @@
         "mode": { "type": "string", "enum": ["enforce", "advisory"] },
         "dry_run": { "type": "boolean", "default": false }
       }
-    },
+    }
+    ,
     "extensions": { "type": "object", "additionalProperties": true, "default": {} }
   }
 }

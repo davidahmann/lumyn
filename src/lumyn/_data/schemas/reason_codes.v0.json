@@ -39,15 +39,15 @@
       "description": "Similarity to a labeled failure is high; escalated."
     },
     { "code": "CHARGEBACK_RISK_BLOCK", "description": "Chargeback risk too high; refund blocked." },
+    {
+      "code": "CHANGE_EMAIL_TAKEOVER_RISK_BLOCK",
+      "description": "Account takeover risk too high; email change blocked."
+    },
     { "code": "PAYMENT_INSTRUMENT_HIGH_RISK", "description": "Payment instrument risk too high; action blocked." },
     { "code": "ACCOUNT_TAKEOVER_RISK_BLOCK", "description": "Account takeover risk too high; action blocked." },
     { "code": "MANUAL_APPROVAL_PRESENT_ESCALATE", "description": "Manual approval required by workflow; escalated." },
     { "code": "MISSING_FX_RATE", "description": "Amount not in USD and no fx rate provided; more info required." },
     { "code": "CLOSE_TICKET_OK", "description": "Ticket close allowed by policy." },
-    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." },
-    {
-      "code": "CHANGE_EMAIL_TAKEOVER_RISK_BLOCK",
-      "description": "Account takeover risk too high; email change blocked."
-    }
+    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." }
   ]
 }
