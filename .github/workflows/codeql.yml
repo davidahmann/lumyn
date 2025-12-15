@@ -28,21 +28,22 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+        uses: github/codeql-action/init@v4
         with:
           languages: python
           queries: security-and-quality
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+        uses: github/codeql-action/analyze@v4
         with:
           # Avoid failing CI for repos where Code Scanning isn't enabled yet.
           # We still generate SARIF and upload it as a build artifact below.
           upload: false
-          output: ../results
+          upload-database: false
+          output: results
 
       - name: Upload SARIF artifact
         uses: actions/upload-artifact@v4
         with:
           name: codeql-sarif
-          path: ../results/*.sarif
+          path: results/*.sarif
