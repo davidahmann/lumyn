@@ -53,6 +53,7 @@ def _abstain_storage_unavailable_record(
             reason_codes=["STORAGE_UNAVAILABLE"],
             matched_rules=[],
             queries=[],
+            obligations=[],
         ),
         inputs_digest=inputs_digest,
         risk_signals=RiskSignals(

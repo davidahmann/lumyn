@@ -198,6 +198,16 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [REFUND_SMALL_LOW_RISK]
+      obligations:
+        - type: check
+          title: Verify ticket exists
+          details: Confirm the support ticket_id exists and matches the order/customer.
+        - type: check
+          title: Verify payment object state
+          details: Confirm the target charge is eligible for refund (not already refunded/voided).
+        - type: rollback_hint
+          title: Compensating action
+          details: If later flagged, void/reverse the refund and escalate to a human reviewer.
 
   - id: R051
     stage: TRUST_PATHS
@@ -206,6 +216,13 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [CREDIT_SMALL]
+      obligations:
+        - type: check
+          title: Verify credit reason
+          details: Ensure evidence.reason_code is valid for issuing credit.
+        - type: rollback_hint
+          title: Compensating action
+          details: If later flagged, void the credit and notify the account owner.
 
   - id: R052
     stage: TRUST_PATHS
@@ -213,6 +230,10 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [CLOSE_TICKET_OK]
+      obligations:
+        - type: check
+          title: Verify resolution
+          details: Confirm the ticket resolution_code is set correctly before closing.
 
   - id: R053
     stage: TRUST_PATHS
@@ -220,3 +241,7 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [UPDATE_TICKET_OK]
+      obligations:
+        - type: check
+          title: Verify ticket_id
+          details: Confirm the ticket_id exists and belongs to the expected tenant.

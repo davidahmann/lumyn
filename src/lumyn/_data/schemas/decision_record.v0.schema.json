@@ -91,6 +91,11 @@
       },
       "default": []
     },
+    "obligations": {
+      "type": "array",
+      "items": { "type": "object", "additionalProperties": true },
+      "default": []
+    },
     "determinism": {
       "type": "object",
       "additionalProperties": false,

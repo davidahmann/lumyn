@@ -104,6 +104,13 @@ def main(
     else:
         reason_codes = []
 
+    raw_obligations = record.get("obligations")
+    obligations: list[object]
+    if isinstance(raw_obligations, list):
+        obligations = raw_obligations
+    else:
+        obligations = []
+
     raw_context = request.get("context")
     context: dict[str, Any]
     if isinstance(raw_context, dict):
@@ -118,6 +125,12 @@ def main(
         typer.echo(f"- policy_hash: `{policy_hash}`")
         typer.echo(f"- context_digest: `{context.get('digest')}`")
         typer.echo(f"- inputs_digest: `{computed_inputs_digest}`")
+        if obligations:
+            typer.echo(f"- obligations: `{len(obligations)}`")
+            typer.echo("")
+            typer.echo("## Obligations")
+            for item in obligations:
+                typer.echo(f"- {item}")
     else:
         typer.echo("ok")
         typer.echo(f"decision_id: {decision_id}")
@@ -125,3 +138,5 @@ def main(
         typer.echo(f"policy_hash: {policy_hash}")
         typer.echo(f"context_digest: {context.get('digest')}")
         typer.echo(f"inputs_digest: {computed_inputs_digest}")
+        if obligations:
+            typer.echo(f"obligations: {len(obligations)}")

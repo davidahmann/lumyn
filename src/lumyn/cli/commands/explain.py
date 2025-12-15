@@ -45,6 +45,13 @@ def main(
     else:
         matched_rules = []
 
+    raw_obligations = record.get("obligations")
+    obligations: list[object]
+    if isinstance(raw_obligations, list):
+        obligations = raw_obligations
+    else:
+        obligations = []
+
     raw_policy = record.get("policy")
     policy: dict[str, object]
     if isinstance(raw_policy, dict):
@@ -92,6 +99,29 @@ def main(
                     f"effect=`{r.get('effect')}` "
                     f"reasons=`{r.get('reason_codes')}`"
                 )
+        if obligations:
+            typer.echo("")
+            typer.echo("## Obligations")
+            for item in obligations:
+                if not isinstance(item, dict):
+                    continue
+                obligation_type = item.get("type")
+                title = item.get("title")
+                details = item.get("details")
+                source = item.get("source")
+                parts: list[str] = []
+                if isinstance(obligation_type, str) and obligation_type:
+                    parts.append(f"type=`{obligation_type}`")
+                if isinstance(title, str) and title:
+                    parts.append(f"title={title!r}")
+                if isinstance(source, dict):
+                    stage = source.get("stage")
+                    rule_id = source.get("rule_id")
+                    if isinstance(stage, str) and isinstance(rule_id, str):
+                        parts.append(f"source=`{stage}:{rule_id}`")
+                if isinstance(details, str) and details:
+                    parts.append(f"details={details!r}")
+                typer.echo(f"- {' '.join(parts) if parts else str(item)}")
         return
 
     typer.echo(f"decision_id: {record.get('decision_id')}")
@@ -107,3 +137,7 @@ def main(
                 f"  - {r.get('stage')}:{r.get('rule_id')} effect={r.get('effect')} "
                 f"reasons={r.get('reason_codes')}"
             )
+    if obligations:
+        typer.echo("obligations:")
+        for item in obligations:
+            typer.echo(f"  - {item}")

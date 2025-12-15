@@ -23,6 +23,7 @@ class EvaluationResult:
     reason_codes: list[str]
     matched_rules: list[MatchedRule]
     queries: list[dict[str, str]]
+    obligations: list[dict[str, Any]]
 
 
 def _when_matches(action_type: str, when: dict[str, Any] | None) -> bool:
@@ -155,6 +156,7 @@ def evaluate_policy(
     matched_rules: list[MatchedRule] = []
     reason_codes: list[str] = []
     queries: list[dict[str, str]] = []
+    obligations: list[dict[str, Any]] = []
 
     required_evidence = policy.get("required_evidence")
     required_evidence_map: dict[str, Any] = (
@@ -244,6 +246,21 @@ def evaluate_policy(
                     ):
                         queries.append({"field": item["field"], "question": item["question"]})
 
+            then_obligations = then.get("obligations", [])
+            if isinstance(then_obligations, list):
+                for item in then_obligations:
+                    if not isinstance(item, dict):
+                        continue
+                    obligation = dict(item)
+                    obligation.setdefault("source", {})
+                    source = obligation.get("source")
+                    if isinstance(source, dict):
+                        source.setdefault("rule_id", rule_id)
+                        source.setdefault("stage", stage)
+                    else:
+                        obligation["source"] = {"rule_id": rule_id, "stage": stage}
+                    obligations.append(obligation)
+
     if not matched_rules:
         defaults_raw = policy.get("defaults")
         defaults: dict[str, Any] = defaults_raw if isinstance(defaults_raw, dict) else {}
@@ -269,4 +286,5 @@ def evaluate_policy(
         reason_codes=reason_codes,
         matched_rules=matched_rules,
         queries=queries,
+        obligations=obligations,
     )

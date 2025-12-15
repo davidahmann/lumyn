@@ -95,6 +95,7 @@ def build_decision_record(
             },
         },
         "queries": evaluation.queries,
+        "obligations": evaluation.obligations,
         "determinism": {
             "engine_version": engine_version,
             "evaluation_order": [
