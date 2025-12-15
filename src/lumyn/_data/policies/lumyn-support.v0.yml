@@ -39,7 +39,7 @@ rules:
         - field: evidence.order_id
           question: What order_id is this refund for?
         - field: evidence.customer_id
-          question: What customer_id justifies this refund?
+          question: What customer_id is this refund for?
 
   - id: R002
     stage: REQUIREMENTS
@@ -97,7 +97,7 @@ rules:
         - field: evidence.customer_id
           question: What customer_id is this password reset for?
 
-  # Requirements: currency handling (no external FX calls in v0)
+  # Requirements: currency handling (no external FX calls in v1)
   - id: R007
     stage: REQUIREMENTS
     when: { action_type: support.refund }
