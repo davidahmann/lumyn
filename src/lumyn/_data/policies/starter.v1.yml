@@ -11,7 +11,7 @@ rules:
   # Requirements: Validate input presence explicitly (no magic)
   # R001-R006: Check for missing evidence.
   # V1 design: Use explicit `if` to check for null (missing) evidence.
-  
+
   - id: R001
     stage: REQUIREMENTS
     when: { action_type: support.refund }
@@ -45,7 +45,7 @@ rules:
   # Hard blocks - Sanctions / High Risk
   - id: R020
     stage: HARD_BLOCKS
-    when: { action_type: support.refund } 
+    when: { action_type: support.refund }
     # v1 when doesn't support 'action_type_in' yet? "when: optional predicate (e.g., action_type: withdrawal)"
     # I should stick to simple matches or add support. R020 used action_type_in.
     # I can split into multiple rules or add support. Splitting is safer for V1 MVP strictness.
