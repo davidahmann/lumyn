@@ -31,6 +31,22 @@ Lumyn's unit of evidence is a `decision_id`. Paste it into the ticket, then:
 - **Compounding reliability**: labeled failures/successes feed Experience Memory similarity.
 - **Drop-in**: works as a Python library and as an optional HTTP service.
 
+## Operations & Safety (Wow)
+
+#### 📺 The War Room (`lumyn monitor`)
+"Less drama. Fewer incidents."
+A live, scrolling Matrix-style TUI showing decisions as they happen.
+```bash
+lumyn monitor --limit 50
+```
+
+#### 🛡️ Regression Testing (`lumyn diff`)
+"Did my change block valid users?"
+Run a candidate policy against a history of past records to catch regressions before deployment.
+```bash
+lumyn diff past_traffic.json --policy new_policy.v1.yml
+```
+
 ## The primitive
 
 You wrap a risky action with `decide()`:

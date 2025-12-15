@@ -43,6 +43,9 @@ Run CLI decision:
 
 `lumyn decide request.json --pretty`
 
+> [!TIP]
+> Open a second terminal and run `lumyn monitor` to see a live "Matrix-style" feed of decisions as they happen!
+
 ## 4) Incident flow (show / explain / export / replay)
 
 Get the `decision_id` from the output above, then:
