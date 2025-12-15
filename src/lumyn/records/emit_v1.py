@@ -97,7 +97,7 @@ def build_decision_record_v1(
                 "REQUIREMENTS",
                 "HARD_BLOCKS",
                 "ESCALATIONS",
-                "TRUST_PATHS",
+                "ALLOW_PATHS",
                 "DEFAULT",
             ],
             # v1 might change this list in Epic V1-2B, for now use v0/placeholder list.
