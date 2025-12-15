@@ -41,6 +41,7 @@ class StoreStats:
     decisions: int
     decision_events: int
     memory_items: int
+    policy_snapshots: int
 
 
 class SqliteStore:
@@ -143,6 +144,35 @@ class SqliteStore:
                     record_json,
                 ),
             )
+
+    def put_policy_snapshot(
+        self,
+        *,
+        policy_hash: str,
+        policy_id: str,
+        policy_version: str,
+        policy_text: str,
+    ) -> None:
+        created_at = _utc_now_iso()
+        with self.connect() as conn:
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO policy_snapshots (
+                  policy_hash, policy_id, policy_version, created_at, policy_text
+                ) VALUES (?, ?, ?, ?, ?)
+                """,
+                (policy_hash, policy_id, policy_version, created_at, policy_text),
+            )
+
+    def get_policy_snapshot(self, policy_hash: str) -> str | None:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT policy_text FROM policy_snapshots WHERE policy_hash = ?",
+                (policy_hash,),
+            ).fetchone()
+            if row is None:
+                return None
+            return cast(str, row["policy_text"])
 
     def get_decision_record(self, decision_id: str) -> dict[str, Any] | None:
         with self.connect() as conn:
@@ -285,4 +315,12 @@ class SqliteStore:
             decisions = int(conn.execute("SELECT COUNT(*) FROM decisions").fetchone()[0])
             events = int(conn.execute("SELECT COUNT(*) FROM decision_events").fetchone()[0])
             memory = int(conn.execute("SELECT COUNT(*) FROM memory_items").fetchone()[0])
-        return StoreStats(decisions=decisions, decision_events=events, memory_items=memory)
+            policy_snapshots = int(
+                conn.execute("SELECT COUNT(*) FROM policy_snapshots").fetchone()[0]
+            )
+        return StoreStats(
+            decisions=decisions,
+            decision_events=events,
+            memory_items=memory,
+            policy_snapshots=policy_snapshots,
+        )

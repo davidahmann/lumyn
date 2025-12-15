@@ -38,3 +38,4 @@ def main(
     typer.echo(f"decisions: {stats.decisions}")
     typer.echo(f"decision_events: {stats.decision_events}")
     typer.echo(f"memory_items: {stats.memory_items}")
+    typer.echo(f"policy_snapshots: {stats.policy_snapshots}")

@@ -14,4 +14,3 @@ This project follows SemVer. Schema changes are tracked explicitly; v0 schemas a
 
 ### Engine / SDK / CLI / Service
 - No changes.
-

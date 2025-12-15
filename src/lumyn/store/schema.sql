@@ -52,3 +52,13 @@ CREATE TABLE IF NOT EXISTS memory_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_memory_items_lookup ON memory_items (tenant_id, action_type, label, created_at);
+
+CREATE TABLE IF NOT EXISTS policy_snapshots (
+  policy_hash TEXT PRIMARY KEY,
+  policy_id TEXT NOT NULL,
+  policy_version TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  policy_text TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_policy_snapshots_created_at ON policy_snapshots (created_at);

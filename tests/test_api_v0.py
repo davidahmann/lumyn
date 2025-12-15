@@ -83,6 +83,19 @@ def test_api_events_endpoint(tmp_path: Path) -> None:
     assert isinstance(payload.get("event_id"), str)
 
 
+def test_api_policy_endpoint(tmp_path: Path) -> None:
+    store_path = tmp_path / "lumyn.db"
+    app = create_app(settings=_settings(store_path=store_path))
+    client = TestClient(app)
+
+    resp = client.get("/v0/policy")
+    assert resp.status_code == 200, resp.text
+    payload = resp.json()
+    assert payload["policy_id"] == "lumyn-support"
+    assert payload["policy_version"] == "0.1.0"
+    assert payload["policy_hash"].startswith("sha256:")
+
+
 def test_api_decide_requires_signature_when_configured(tmp_path: Path) -> None:
     store_path = tmp_path / "lumyn.db"
     signing_key = "test-signing-key"

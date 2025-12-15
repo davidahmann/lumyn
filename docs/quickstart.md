@@ -62,5 +62,12 @@ Call it:
 
 Optional request signing (service mode):
 - Set `LUMYN_SIGNING_SECRET`
-- Send `X-Lumyn-Signature: sha256:<hmac(body)>`
+- Send `X-Lumyn-Signature: sha256:<hmac(body)>` where `body` is the **exact bytes** you send.
 
+Example (sign a file you send via `--data-binary @file`):
+
+`export LUMYN_SIGNING_SECRET='dev-signing-key'`  # pragma: allowlist secret
+
+`export SIG="$(python - <<'PY'\nimport hmac, hashlib\nsecret = b'dev-signing-key'  # pragma: allowlist secret\nbody = open('examples/curl/decision_request_refund.json','rb').read()\nprint('sha256:' + hmac.new(secret, body, hashlib.sha256).hexdigest())\nPY\n)"`
+
+`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' -H "X-Lumyn-Signature: $SIG" --data-binary @examples/curl/decision_request_refund.json`

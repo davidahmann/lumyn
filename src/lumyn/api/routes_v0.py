@@ -9,6 +9,7 @@ from jsonschema.exceptions import ValidationError
 
 from lumyn.api.auth import require_hmac_signature
 from lumyn.core.decide import LumynConfig, decide
+from lumyn.policy.loader import load_policy
 from lumyn.store.sqlite import SqliteStore
 from lumyn.telemetry.tracing import start_span
 
@@ -80,6 +81,16 @@ def build_routes_v0(*, deps: ApiV0Deps) -> APIRouter:
 
             event_id = deps.store.append_decision_event(decision_id, event_type, data)
             return {"event_id": event_id}
+
+    @router.get("/v0/policy")
+    def get_policy() -> dict[str, Any]:
+        with start_span("http.get /v0/policy"):
+            loaded = load_policy(deps.config.policy_path)
+            return {
+                "policy_id": loaded.policy["policy_id"],
+                "policy_version": loaded.policy["policy_version"],
+                "policy_hash": loaded.policy_hash,
+            }
 
     return router
 

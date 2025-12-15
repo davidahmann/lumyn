@@ -37,7 +37,7 @@ repos:
           - pyyaml>=6.0.2
           - jsonschema>=4.23.0
           - types-jsonschema>=4.23.0.20240813
-          - typer>=0.12
+          - typer>=0.12,<0.20
           - ulid-py>=1.1.0
           - types-PyYAML>=6.0.12.20240808
 

@@ -87,7 +87,10 @@ Service mode (FastAPI):
 - `uv run python -c "from lumyn.api.app import create_app; app = create_app(); print(app)"` (sanity)
 - Run with Uvicorn: `uv run uvicorn --factory lumyn.api.app:create_app --host 127.0.0.1 --port 8000`
 - Env config: `LUMYN_POLICY_PATH`, `LUMYN_STORAGE_URL` (e.g. `sqlite:.lumyn/lumyn.db`), `LUMYN_MODE`, `LUMYN_REDACTION_PROFILE`, `LUMYN_SIGNING_SECRET`
-- If `LUMYN_SIGNING_SECRET` is set, `POST /v0/decide` requires `X-Lumyn-Signature: sha256:<hmac(body)>`
+- If `LUMYN_SIGNING_SECRET` is set, `POST /v0/decide` requires `X-Lumyn-Signature: sha256:<hmac(body)>` over the exact request body bytes.
+
+Docs:
+- `docs/quickstart.md`
 
 ## Documentation
 

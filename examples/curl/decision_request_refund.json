@@ -11,4 +11,3 @@
   "evidence": { "ticket_id": "ZD-1001", "order_id": "82731", "customer_id": "C-9" },
   "context": { "mode": "digest_only", "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
 }
-

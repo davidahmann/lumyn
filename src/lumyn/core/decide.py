@@ -59,6 +59,12 @@ def decide(
 
         store_impl = store or SqliteStore(cfg.store_path)
         store_impl.init()
+        store_impl.put_policy_snapshot(
+            policy_hash=loaded_policy.policy_hash,
+            policy_id=str(loaded_policy.policy["policy_id"]),
+            policy_version=str(loaded_policy.policy["policy_version"]),
+            policy_text=Path(cfg.policy_path).read_text(encoding="utf-8"),
+        )
 
         # Experience memory similarity (MVP): compare feature dicts.
         tenant_id = (
