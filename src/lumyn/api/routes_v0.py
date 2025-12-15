@@ -4,9 +4,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 from jsonschema.exceptions import ValidationError
 
+from lumyn.api.auth import require_hmac_signature
 from lumyn.core.decide import LumynConfig, decide
 from lumyn.store.sqlite import SqliteStore
 
@@ -15,13 +16,21 @@ from lumyn.store.sqlite import SqliteStore
 class ApiV0Deps:
     config: LumynConfig
     store: SqliteStore
+    signing_secret: str | None = None
 
 
 def build_routes_v0(*, deps: ApiV0Deps) -> APIRouter:
     router = APIRouter()
 
     @router.post("/v0/decide")
-    def post_decide(payload: dict[str, Any]) -> dict[str, Any]:
+    async def post_decide(request: Request, payload: dict[str, Any]) -> dict[str, Any]:
+        if deps.signing_secret is not None:
+            body = await request.body()
+            require_hmac_signature(
+                body=body,
+                secret=deps.signing_secret,
+                provided=request.headers.get("X-Lumyn-Signature"),
+            )
         try:
             return decide(payload, config=deps.config, store=deps.store)
         except ValidationError as e:

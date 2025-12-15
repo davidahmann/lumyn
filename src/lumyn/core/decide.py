@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -8,6 +9,7 @@ from jsonschema import Draft202012Validator
 
 from lumyn.engine.evaluator import evaluate_policy
 from lumyn.engine.normalize import normalize_request
+from lumyn.engine.redaction import redact_request_for_persistence
 from lumyn.engine.similarity import top_k_matches
 from lumyn.policy.loader import load_policy
 from lumyn.records.emit import RiskSignals, build_decision_record, compute_inputs_digest
@@ -21,6 +23,8 @@ class LumynConfig:
     policy_path: str | Path = "policies/lumyn-support.v0.yml"
     store_path: str | Path = ".lumyn/lumyn.db"
     top_k: int = 5
+    mode: str | None = None
+    redaction_profile: str = "default"
 
 
 def _validate_request_or_raise(request: dict[str, Any]) -> None:
@@ -35,20 +39,28 @@ def decide(
     store: SqliteStore | None = None,
 ) -> dict[str, Any]:
     cfg = config or LumynConfig()
-    _validate_request_or_raise(request)
+    request_eval = copy.deepcopy(request)
+    if cfg.mode in {"enforce", "advisory"}:
+        policy_obj = request_eval.get("policy")
+        if isinstance(policy_obj, dict):
+            policy_obj.setdefault("mode", cfg.mode)
+        else:
+            request_eval["policy"] = {"mode": cfg.mode}
+
+    _validate_request_or_raise(request_eval)
 
     loaded_policy = load_policy(cfg.policy_path)
     policy = dict(loaded_policy.policy)
 
-    normalized = normalize_request(request)
+    normalized = normalize_request(request_eval)
 
     store_impl = store or SqliteStore(cfg.store_path)
     store_impl.init()
 
     # Experience memory similarity (MVP): compare feature dicts.
     tenant_id = (
-        request.get("subject", {}).get("tenant_id")
-        if isinstance(request.get("subject"), dict)
+        request_eval.get("subject", {}).get("tenant_id")
+        if isinstance(request_eval.get("subject"), dict)
         else None
     )
     tenant_id = tenant_id if isinstance(tenant_id, str) else None
@@ -67,9 +79,9 @@ def decide(
                 else "large"
             )
         ),
-        "tags": (request.get("action", {}) if isinstance(request.get("action"), dict) else {}).get(
-            "tags", []
-        ),
+        "tags": (
+            request_eval.get("action", {}) if isinstance(request_eval.get("action"), dict) else {}
+        ).get("tags", []),
     }
 
     memory_items = store_impl.list_memory_items(
@@ -86,7 +98,7 @@ def decide(
             }
         )
 
-    evaluation = evaluate_policy(request, policy=policy)
+    evaluation = evaluate_policy(request_eval, policy=policy)
 
     matches = top_k_matches(query_feature=query_feature, candidates=candidates, top_k=cfg.top_k)
     failure_matches = [m for m in matches if m.label == "failure"]
@@ -100,10 +112,20 @@ def decide(
         uncertainty += 0.3
     uncertainty = min(1.0, max(0.0, uncertainty))
 
-    inputs_digest = compute_inputs_digest(request, normalized=normalized)
+    inputs_digest = compute_inputs_digest(request_eval, normalized=normalized)
+
+    redaction_profile = cfg.redaction_profile
+    ctx = request_eval.get("context")
+    if isinstance(ctx, dict):
+        redaction = ctx.get("redaction")
+        if isinstance(redaction, dict) and isinstance(redaction.get("profile"), str):
+            redaction_profile = redaction["profile"]
+
+    request_for_record = copy.deepcopy(request_eval)
+    redaction_result = redact_request_for_persistence(request_for_record, profile=redaction_profile)
 
     record = build_decision_record(
-        request=request,
+        request=redaction_result.request,
         loaded_policy=loaded_policy,
         evaluation=evaluation,
         inputs_digest=inputs_digest,

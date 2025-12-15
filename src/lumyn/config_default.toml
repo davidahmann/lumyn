@@ -1,0 +1,22 @@
+# Lumyn default configuration (v0)
+
+[lumyn]
+# Storage backend URL (v0 only supports sqlite)
+storage_url = "sqlite:.lumyn/lumyn.db"
+
+# Policy file path (YAML v0)
+policy_path = "policies/lumyn-support.v0.yml"
+
+# Default policy mode for emitted Decision Records: "enforce" or "advisory"
+mode = "enforce"
+
+# Redaction profile for `context.mode = "inline"` persistence: "default" | "strict" | "off"
+redaction_profile = "default"
+
+# Experience Memory similarity top-k
+top_k = 5
+
+[service]
+# Optional shared-secret HMAC signing for POST /v0/decide (leave empty to disable)
+signing_secret = ""
+

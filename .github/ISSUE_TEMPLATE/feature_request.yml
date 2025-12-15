@@ -39,4 +39,3 @@ body:
         - label: CLI
         - label: Service (FastAPI)
         - label: Docs / examples
-

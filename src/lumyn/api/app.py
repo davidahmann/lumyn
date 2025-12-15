@@ -1,38 +1,32 @@
 from __future__ import annotations
 
-import os
-from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI
 
-from lumyn.api.routes_v0 import build_routes_v0, make_default_deps
+from lumyn.api.routes_v0 import ApiV0Deps, build_routes_v0
+from lumyn.config import Settings, load_settings, storage_path_from_url
+from lumyn.core.decide import LumynConfig
+from lumyn.store.sqlite import SqliteStore
 from lumyn.version import __version__
 
 
-@dataclass(frozen=True, slots=True)
-class ApiConfig:
-    policy_path: Path = Path("policies/lumyn-support.v0.yml")
-    store_path: Path = Path(".lumyn/lumyn.db")
-    top_k: int = 5
+def create_app(*, settings: Settings | None = None) -> FastAPI:
+    settings = settings or load_settings()
 
-    @staticmethod
-    def from_env() -> ApiConfig:
-        policy_path = Path(os.getenv("LUMYN_POLICY_PATH", "policies/lumyn-support.v0.yml"))
-        store_path = Path(os.getenv("LUMYN_STORE_PATH", ".lumyn/lumyn.db"))
-        top_k_raw = os.getenv("LUMYN_TOP_K", "5")
-        try:
-            top_k = int(top_k_raw)
-        except ValueError:
-            top_k = 5
-        return ApiConfig(policy_path=policy_path, store_path=store_path, top_k=top_k)
+    store_path = storage_path_from_url(settings.lumyn.storage_url)
+    store = SqliteStore(store_path)
 
-
-def create_app(*, config: ApiConfig | None = None) -> FastAPI:
-    cfg = config or ApiConfig.from_env()
-    deps = make_default_deps(
-        policy_path=cfg.policy_path, store_path=cfg.store_path, top_k=cfg.top_k
+    deps = ApiV0Deps(
+        config=LumynConfig(
+            policy_path=settings.lumyn.policy_path,
+            store_path=store_path,
+            top_k=settings.lumyn.top_k,
+            mode=settings.lumyn.mode,
+            redaction_profile=settings.lumyn.redaction_profile,
+        ),
+        store=store,
+        signing_secret=settings.service.signing_secret,
     )
 
     app = FastAPI(title="Lumyn", version=__version__)
@@ -43,3 +37,6 @@ def create_app(*, config: ApiConfig | None = None) -> FastAPI:
         return {"ok": True}
 
     return app
+
+
+app = create_app()
