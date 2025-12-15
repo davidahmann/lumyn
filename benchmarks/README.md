@@ -12,4 +12,3 @@ Notes:
 - Uses local SQLite at `.lumyn/bench.db`
 - Uses the starter policy `policies/lumyn-support.v0.yml`
 - Prints rough p50/p95 timings (wall clock)
-

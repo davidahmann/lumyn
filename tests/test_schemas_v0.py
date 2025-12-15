@@ -27,8 +27,13 @@ def test_examples_validate_against_schemas() -> None:
     record_schema = _load_json(Path("schemas/decision_record.v0.schema.json"))
     policy_schema = _load_json(Path("schemas/policy.v0.schema.json"))
 
+    validator = Draft202012Validator(request_schema)
     request = _load_json(Path("examples/decision_request_refund.json"))
-    Draft202012Validator(request_schema).validate(request)
+    validator.validate(request)
+
+    for request_path in sorted(Path("examples/curl").glob("*.json")):
+        payload = _load_json(request_path)
+        validator.validate(payload)
 
     record = _load_json(Path("examples/decision_record_example.json"))
     Draft202012Validator(record_schema).validate(record)

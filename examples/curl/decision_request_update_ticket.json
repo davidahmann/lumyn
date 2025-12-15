@@ -1,0 +1,12 @@
+{
+  "schema_version": "decision_request.v0",
+  "subject": { "type": "service", "id": "support-agent", "tenant_id": "acme" },
+  "action": {
+    "type": "support.update_ticket",
+    "intent": "Update ticket ZD-4002 with resolved status",
+    "tags": ["ticket_update"]
+  },
+  "evidence": { "ticket_id": "ZD-4002" },
+  "context": { "mode": "digest_only", "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+}
+
