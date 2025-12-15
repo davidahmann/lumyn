@@ -39,7 +39,9 @@ def test_decision_record_includes_obligations_when_policy_sets_them(tmp_path: Pa
         encoding="utf-8",
     )
 
-    decided = runner.invoke(app, ["decide", "--workspace", str(workspace), "--in", str(request_path)])
+    decided = runner.invoke(
+        app, ["decide", "--workspace", str(workspace), "--in", str(request_path)]
+    )
     assert decided.exit_code == 0
     record = json.loads(decided.stdout)
     obligations = record.get("obligations", [])
@@ -78,7 +80,9 @@ def test_cli_explain_markdown_includes_obligations(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    decided = runner.invoke(app, ["decide", "--workspace", str(workspace), "--in", str(request_path)])
+    decided = runner.invoke(
+        app, ["decide", "--workspace", str(workspace), "--in", str(request_path)]
+    )
     assert decided.exit_code == 0
     record = json.loads(decided.stdout)
     decision_id = record["decision_id"]
@@ -89,4 +93,3 @@ def test_cli_explain_markdown_includes_obligations(tmp_path: Path) -> None:
     )
     assert explained.exit_code == 0
     assert "## Obligations" in explained.stdout
-
