@@ -35,3 +35,14 @@ jobs:
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          # Avoid failing CI for repos where Code Scanning isn't enabled yet.
+          # We still generate SARIF and upload it as a build artifact below.
+          upload: false
+          output: ../results
+
+      - name: Upload SARIF artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: codeql-sarif
+          path: ../results/*.sarif
