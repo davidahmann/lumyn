@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import shutil
 from pathlib import Path
 
 import typer
 
+from lumyn.policy.loader import read_policy_text
 from lumyn.store.sqlite import SqliteStore
 
 from ..util import die, resolve_workspace_paths
@@ -18,13 +18,14 @@ def initialize_workspace(*, workspace: Path, policy_template: Path, force: bool)
     paths = resolve_workspace_paths(workspace)
     paths.workspace.mkdir(parents=True, exist_ok=True)
 
-    if not policy_template.exists():
-        die(f"policy template not found: {policy_template}")
-
     if paths.policy_path.exists() and not force:
         pass
     else:
-        shutil.copyfile(policy_template, paths.policy_path)
+        try:
+            policy_text = read_policy_text(policy_template)
+        except FileNotFoundError:
+            die(f"policy template not found: {policy_template}")
+        paths.policy_path.write_text(policy_text, encoding="utf-8")
 
     store = SqliteStore(paths.db_path)
     store.init()

@@ -8,6 +8,7 @@ from typing import Any
 from jsonschema import Draft202012Validator
 
 from lumyn.policy.errors import PolicyError
+from lumyn.schemas.loaders import load_json_schema
 
 SUPPORTED_WHEN_KEYS = {"action_type", "action_type_in"}
 
@@ -37,12 +38,6 @@ SUPPORTED_CONDITION_KEYS = {
 class PolicyValidationResult:
     ok: bool
     errors: list[str]
-
-
-def _load_json(path: Path) -> Any:
-    import json
-
-    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _validate_rule_expr(rule_id: str, expr: Any, errors: list[str]) -> None:
@@ -130,11 +125,11 @@ def validate_policy_v0(
 def validate_policy_or_raise(
     policy: Mapping[str, Any],
     *,
-    policy_schema_path: Path,
-    reason_codes_path: Path,
+    policy_schema_path: str | Path,
+    reason_codes_path: str | Path,
 ) -> None:
-    policy_schema = _load_json(policy_schema_path)
-    reason_codes_doc = _load_json(reason_codes_path)
+    policy_schema = load_json_schema(policy_schema_path)
+    reason_codes_doc = load_json_schema(reason_codes_path)
     known_reason_codes = [item["code"] for item in reason_codes_doc.get("codes", [])]
 
     result = validate_policy_v0(

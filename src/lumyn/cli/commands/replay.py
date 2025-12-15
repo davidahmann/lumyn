@@ -13,17 +13,11 @@ from lumyn.engine.normalize import normalize_request
 from lumyn.policy.loader import compute_policy_hash
 from lumyn.policy.validate import validate_policy_or_raise
 from lumyn.records.emit import compute_inputs_digest
+from lumyn.schemas.loaders import load_json_schema
 
 from ..util import die
 
 app = typer.Typer(help="Validate and summarize a Lumyn decision pack (ZIP).")
-
-
-def _load_json_schema(path: Path) -> dict[str, Any]:
-    data = json.loads(path.read_text(encoding="utf-8"))
-    if not isinstance(data, dict):
-        raise ValueError(f"schema did not parse to an object: {path}")
-    return data
 
 
 def _zip_read_json(zf: zipfile.ZipFile, name: str) -> dict[str, Any]:
@@ -55,10 +49,10 @@ def main(
     if pack_path.suffix.lower() != ".zip":
         die("pack_path must be a .zip file")
 
-    request_schema = _load_json_schema(Path("schemas/decision_request.v0.schema.json"))
-    record_schema = _load_json_schema(Path("schemas/decision_record.v0.schema.json"))
-    policy_schema_path = Path("schemas/policy.v0.schema.json")
-    reason_codes_path = Path("schemas/reason_codes.v0.json")
+    request_schema = load_json_schema("schemas/decision_request.v0.schema.json")
+    record_schema = load_json_schema("schemas/decision_record.v0.schema.json")
+    policy_schema_path = "schemas/policy.v0.schema.json"
+    reason_codes_path = "schemas/reason_codes.v0.json"
 
     with zipfile.ZipFile(pack_path) as zf:
         record = _zip_read_json(zf, "decision_record.json")

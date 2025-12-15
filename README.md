@@ -5,7 +5,22 @@
 Lumyn is a deterministic `decide()` gateway for AI systems that take real actions (refunds,
 ticket operations, account changes). Instead of “the model said so,” Lumyn returns a
 verdict — `TRUST | ABSTAIN | ESCALATE | QUERY` — and writes a durable **Decision Record**
-you can replay during incidents.
+you can export, replay, and verify under incident pressure.
+
+`decide -> record -> export -> replay`
+
+## When an AI incident happens
+
+Support shares a screenshot.
+Engineering tries to reconstruct what the model saw and what policy/risk rules fired.
+Nobody can answer, precisely and repeatably: what happened, what changed, and why did we allow it?
+
+Lumyn’s unit of evidence is a `decision_id`. Paste it into the ticket, then:
+
+- `lumyn show <decision_id>`
+- `lumyn explain <decision_id> --markdown`
+- `lumyn export <decision_id> --pack --out decision_pack.zip`
+- `lumyn replay decision_pack.zip --markdown`
 
 ## Why teams adopt Lumyn
 
@@ -20,18 +35,25 @@ you can replay during incidents.
 You wrap a risky action with `decide()`:
 
 1) you provide a `DecisionRequest` (subject, action, evidence, `context.digest`)
-2) Lumyn evaluates deterministic policy + risk signals + experience similarity
+2) Lumyn evaluates deterministic policy + risk signals + Experience Memory similarity
 3) Lumyn returns a `DecisionRecord` and persists it (append-only)
 
 The Decision Record is the unit you export into incidents, tickets, and postmortems.
+
+## How it works (one screen)
+
+- You provide a `DecisionRequest` (no external fetches in v0; your app supplies `evidence`).
+- Lumyn evaluates policy deterministically (fixed stages + stable reason codes).
+- Lumyn computes Experience Memory similarity from prior labeled outcomes.
+- Lumyn persists the Decision Record to SQLite before returning (or returns ABSTAIN on storage failure).
 
 ## What a Decision Record looks like
 
 ```json
 {
   "schema_version": "decision_record.v0",
-  "decision_id": "dec_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
-  "created_at": "2026-01-13T14:12:05Z",
+  "decision_id": "01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
+  "created_at": "2025-12-15T10:00:00Z",
   "request": {
     "schema_version": "decision_request.v0",
     "subject": { "type": "service", "id": "support-agent", "tenant_id": "acme" },
@@ -68,17 +90,18 @@ The Decision Record is the unit you export into incidents, tickets, and postmort
 }
 ```
 
-## Quickstart (intended)
+## Quickstart (no keys, no Docker)
 
-The MVP ships as:
-- a Python package + CLI (`lumyn`)
-- an optional local service (`POST /v0/decide`)
-
-Install (once published to PyPI):
+Install:
 - `pip install lumyn`
 - Service mode: `pip install lumyn[service]`
 
-Key CLI workflows:
+Fastest “aha” (compounding in seconds):
+
+- `lumyn doctor --fix`
+- `lumyn demo --story`
+
+Common CLI workflows:
 - `lumyn init` (creates local SQLite + starter policy)
 - `lumyn demo` (emits a few real-looking Decision Records as JSON)
 - `lumyn demo --story` (auto-label a failure and show compounding)
@@ -91,33 +114,106 @@ Key CLI workflows:
 - `lumyn doctor` / `lumyn doctor --fix` (workspace health + repairs)
 - `lumyn serve --dry-run` / `lumyn serve` (run FastAPI service)
 
-Service mode (FastAPI):
-- `uv run python -c "from lumyn.api.app import create_app; app = create_app(); print(app)"` (sanity)
-- Run with Lumyn: `uv run lumyn serve --host 127.0.0.1 --port 8000`
-- Env config: `LUMYN_POLICY_PATH`, `LUMYN_STORAGE_URL` (e.g. `sqlite:.lumyn/lumyn.db`), `LUMYN_MODE`, `LUMYN_REDACTION_PROFILE`, `LUMYN_SIGNING_SECRET`
-- If `LUMYN_SIGNING_SECRET` is set, `POST /v0/decide` requires `X-Lumyn-Signature: sha256:<hmac(body)>` over the exact request body bytes.
-- `GET /v0/policy` returns `{policy_id, policy_version, policy_hash}` for the currently loaded policy.
+## SDK (drop-in)
 
-Policy packs (OSS templates you can copy into `.lumyn/policy.yml`):
+Lumyn does not call your model. You call Lumyn before (or around) a real write-path action.
+
+```python
+from lumyn import LumynConfig, decide
+
+cfg = LumynConfig(store_path=".lumyn/lumyn.db")  # default policy is built-in
+
+record = decide(
+    {
+        "schema_version": "decision_request.v0",
+        "request_id": "req_123",  # recommended for retries/idempotency
+        "subject": {"type": "service", "id": "support-agent", "tenant_id": "acme"},
+        "action": {
+            "type": "support.refund",
+            "intent": "Refund duplicate charge for order 82731",
+            "amount": {"value": 12.0, "currency": "USD"},
+            "tags": ["duplicate_charge"],
+        },
+        "evidence": {
+            "ticket_id": "ZD-1001",
+            "order_id": "82731",
+            "customer_id": "C-9",
+            "customer_age_days": 180,
+            "previous_refund_count_90d": 0,
+            "chargeback_risk": 0.05,
+            "payment_instrument_risk": "low",
+        },
+        "context": {"mode": "digest_only", "digest": "sha256:" + ("a" * 64)},
+    },
+    config=cfg,
+)
+
+if record["verdict"] == "TRUST":
+    pass  # perform the write-path action
+else:
+    pass  # block/escalate/ask for evidence based on verdict + reason_codes + queries
+```
+
+## Service mode (FastAPI)
+
+Run:
+- `lumyn serve --dry-run`
+- `lumyn serve --host 127.0.0.1 --port 8000`
+
+Call:
+
+`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' --data-binary @request.json | jq .`
+
+Endpoints:
+- `POST /v0/decide` -> DecisionRecord
+- `GET /v0/decisions/{decision_id}`
+- `POST /v0/decisions/{decision_id}/events`
+- `GET /v0/policy`
+
+Optional request signing:
+- Set `LUMYN_SIGNING_SECRET`
+- Send `X-Lumyn-Signature: sha256:<hmac(body_bytes)>` over the exact bytes you send
+
+## Policy packs (starter templates)
+
+Bundled policies are safe defaults you can copy and customize:
 - `policies/lumyn-support.v0.yml` (support/refund + ticket workflows)
 - `policies/packs/lumyn-account.v0.yml` (account change email)
 - `policies/packs/lumyn-billing.v0.yml` (billing approve spend)
 
-Docs:
-- `docs/quickstart.md`
-- `docs/integration_checklist.md`
+Create a workspace with a specific pack:
+
+- `lumyn init --workspace .lumyn-account --policy-template policies/packs/lumyn-account.v0.yml`
+- `lumyn init --workspace .lumyn-billing --policy-template policies/packs/lumyn-billing.v0.yml`
+
+Validate:
+- `lumyn policy validate --workspace .lumyn-account`
+
+## What Lumyn is / isn’t
+
+Lumyn is:
+- A deterministic decision gateway + durable Decision Records for incidents/audit/debugging
+- A small policy engine with stable reason codes and replayable digests
+
+Lumyn is not:
+- An agent framework
+- A monitoring dashboard
+- A data-fetching risk engine (v0 does not call external systems; you provide evidence)
 
 ## Operational notes (hair-on-fire defaults)
 
 - **Idempotency**: set `request_id` on `DecisionRequest` so retries return the same stored decision.
 - **Storage safety**: if persistence is unavailable, Lumyn returns a schema-valid `ABSTAIN` record with `STORAGE_UNAVAILABLE` (so callers can safely block write-path actions).
 
-## Documentation
+## Docs
 
 - `PRD.md`: what we’re building, for whom, and why
 - `SPECS_SCHEMAS.md`: canonical contracts + determinism rules (v0)
 - `PLAN.md`: epics/stories with acceptance criteria and tests
 - `REPO_STRUCTURE.md`: proposed OSS layout
+- `docs/quickstart.md`
+- `docs/integration_checklist.md`
+- `docs/architecture.md`
 
 ## Design principles
 

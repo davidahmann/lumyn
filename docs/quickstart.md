@@ -1,99 +1,118 @@
-# Quickstart (15 minutes)
+# Quickstart (no keys, no Docker)
 
-Goal: emit a **Decision Record** for a real action (refund / ticket update), store it locally, and replay it by `decision_id`.
+Goal: gate a real write-path action with `decide()`, persist a **Decision Record**, and export/replay it under incident pressure.
 
-## 1) Install + checks
+Lumyn is local-first in v0: it stores decisions in SQLite under `.lumyn/` by default.
 
-From the repo:
+## Requirements
 
-`uv sync --dev`
+- Python `>=3.11`
+- Optional: `curl` + `jq` (used in examples below)
 
-Verify:
+## 1) Install
 
-`uv run pytest -q`
+From PyPI:
 
-## 2) Initialize a local workspace
+- `pip install lumyn`
+- Service mode: `pip install lumyn[service]`
 
-`uv run lumyn init`
+From source (contributors):
+
+- `uv sync --dev`
+- `uv run pytest -q`
+
+## 2) Create/repair a local workspace
 
 This creates:
 - `.lumyn/lumyn.db` (SQLite store)
 - `.lumyn/policy.yml` (starter policy)
 
-## 3) Run the demo
+`lumyn doctor --fix`
 
-`uv run lumyn demo --pretty`
+## 3) Fastest “aha”: compounding in seconds
 
-You’ll get a JSON array of `DecisionRecord` objects.
+This prints a short narrative:
+1) decide
+2) label as failure
+3) decide again and show similarity influence
 
-Fastest “aha” (compounding):
+`lumyn demo --story`
 
-`uv run lumyn demo --story`
+## 4) Make a decision from a request file
 
-## 4) Decide from a request file
+Create a request file:
 
-Use the curl-ready request example:
+`cat > request.json <<'JSON'\n{\n  \"schema_version\": \"decision_request.v0\",\n  \"request_id\": \"req_123\",\n  \"subject\": {\"type\": \"service\", \"id\": \"support-agent\", \"tenant_id\": \"acme\"},\n  \"action\": {\n    \"type\": \"support.refund\",\n    \"intent\": \"Refund duplicate charge for order 82731\",\n    \"amount\": {\"value\": 12.0, \"currency\": \"USD\"},\n    \"tags\": [\"duplicate_charge\"]\n  },\n  \"evidence\": {\n    \"ticket_id\": \"ZD-1001\",\n    \"order_id\": \"82731\",\n    \"customer_id\": \"C-9\",\n    \"customer_age_days\": 180,\n    \"previous_refund_count_90d\": 0,\n    \"chargeback_risk\": 0.05,\n    \"payment_instrument_risk\": \"low\"\n  },\n  \"context\": {\"mode\": \"digest_only\", \"digest\": \"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}\n}\nJSON`
 
-`uv run lumyn decide --in examples/curl/decision_request_refund.json --pretty`
+Decide (writes the Decision Record to SQLite and prints it):
 
-Capture the `decision_id` from the output.
+`lumyn decide --in request.json --out decision.json --pretty`
 
-Tip (recommended): set `request_id` in your `DecisionRequest` so retries are idempotent.
+Extract the `decision_id`:
 
-## 5) Show / explain / export
+`python - <<'PY'\nimport json\nprint(json.load(open('decision.json', encoding='utf-8'))['decision_id'])\nPY`
 
-`uv run lumyn show <decision_id>`
+## 5) Show / explain / export / replay (incident workflow)
 
-`uv run lumyn explain <decision_id>`
+Show:
 
-`uv run lumyn export <decision_id> --out decision_record.json`
+`lumyn show <decision_id>`
 
-Create an incident-ready decision pack and validate it:
+Explain (paste-ready):
 
-`uv run lumyn export <decision_id> --pack --out decision_pack.zip`
+`lumyn explain <decision_id> --markdown`
 
-`uv run lumyn replay decision_pack.zip`
+Export a decision pack ZIP (record + request + policy snapshot) and verify it offline:
+
+`lumyn export <decision_id> --pack --out decision_pack.zip`
+
+`lumyn replay decision_pack.zip --markdown`
 
 ## 6) Label an outcome (Experience Memory)
 
 When you learn the real-world result:
 
-`uv run lumyn label <decision_id> --label failure --summary "Refund caused chargeback"`
+`lumyn label <decision_id> --label failure --summary "Refund caused chargeback"`
 
-This appends a decision event and writes a memory item that can influence similarity on future decisions.
+This appends an event and writes a memory item that can influence future decisions via similarity.
 
-## 6.1) Try another pack (account / billing)
+## 7) Try another policy pack (account / billing)
 
-Switch the workspace policy:
+Create a separate workspace with a different policy template:
 
-`cp policies/packs/lumyn-account.v0.yml .lumyn/policy.yml`
+`lumyn init --workspace .lumyn-account --policy-template policies/packs/lumyn-account.v0.yml`
 
-`uv run lumyn decide --in examples/curl/decision_request_change_email.json --pretty`
+`lumyn init --workspace .lumyn-billing --policy-template policies/packs/lumyn-billing.v0.yml`
 
-Switch again:
+Validate:
 
-`cp policies/packs/lumyn-billing.v0.yml .lumyn/policy.yml`
+`lumyn policy validate --workspace .lumyn-account`
 
-`uv run lumyn decide --in examples/curl/decision_request_approve_spend.json --pretty`
+## 8) Service mode (optional)
 
-## 7) Service mode (optional)
+Start the API:
 
-Run the API:
+`lumyn serve --dry-run`
 
-`uv run lumyn serve`
+`lumyn serve --host 127.0.0.1 --port 8000`
 
 Call it:
 
-`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' --data-binary @examples/curl/decision_request_refund.json | jq .`
+`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' --data-binary @request.json | jq .`
 
-Optional request signing (service mode):
+Optional request signing:
 - Set `LUMYN_SIGNING_SECRET`
-- Send `X-Lumyn-Signature: sha256:<hmac(body)>` where `body` is the **exact bytes** you send.
+- Send `X-Lumyn-Signature: sha256:<hmac(body_bytes)>` over the exact bytes you send
 
 Example (sign a file you send via `--data-binary @file`):
 
 `export LUMYN_SIGNING_SECRET='dev-signing-key'`  # pragma: allowlist secret
 
-`export SIG="$(python - <<'PY'\nimport hmac, hashlib\nsecret = b'dev-signing-key'  # pragma: allowlist secret\nbody = open('examples/curl/decision_request_refund.json','rb').read()\nprint('sha256:' + hmac.new(secret, body, hashlib.sha256).hexdigest())\nPY\n)"`
+`export SIG="$(python - <<'PY'\nimport hmac, hashlib\nsecret = b'dev-signing-key'  # pragma: allowlist secret\nbody = open('request.json','rb').read()\nprint('sha256:' + hmac.new(secret, body, hashlib.sha256).hexdigest())\nPY\n)"`
 
-`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' -H "X-Lumyn-Signature: $SIG" --data-binary @examples/curl/decision_request_refund.json`
+`curl -sS -X POST http://127.0.0.1:8000/v0/decide -H 'content-type: application/json' -H \"X-Lumyn-Signature: $SIG\" --data-binary @request.json | jq .`
+
+## Next steps
+
+- `docs/integration_checklist.md`: production copy/paste checklist
+- `docs/architecture.md`: architecture and end-to-end flow diagrams

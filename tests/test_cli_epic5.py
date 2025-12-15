@@ -18,6 +18,16 @@ def test_cli_init_creates_workspace(tmp_path: Path) -> None:
     assert (workspace / "lumyn.db").exists()
 
 
+def test_cli_init_works_without_repo_assets() -> None:
+    runner = CliRunner()
+    with runner.isolated_filesystem():
+        workspace = Path(".lumyn").resolve()
+        result = runner.invoke(app, ["init", "--workspace", str(workspace)])
+        assert result.exit_code == 0
+        assert (workspace / "policy.yml").exists()
+        assert (workspace / "lumyn.db").exists()
+
+
 def test_cli_demo_emits_multiple_records(tmp_path: Path) -> None:
     runner = CliRunner()
     workspace = tmp_path / ".lumyn"

@@ -54,5 +54,7 @@ def test_cli_replay_validates_export_pack(tmp_path: Path) -> None:
     )
     assert exported.exit_code == 0
 
-    replayed = runner.invoke(app, ["replay", str(out_zip)])
-    assert replayed.exit_code == 0, replayed.stdout
+    with runner.isolated_filesystem():
+        Path("pack.zip").write_bytes(out_zip.read_bytes())
+        replayed = runner.invoke(app, ["replay", "pack.zip"])
+        assert replayed.exit_code == 0, replayed.stdout

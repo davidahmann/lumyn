@@ -12,7 +12,7 @@ from lumyn.engine.evaluator import EvaluationResult, evaluate_policy
 from lumyn.engine.normalize import normalize_request
 from lumyn.engine.redaction import redact_request_for_persistence
 from lumyn.engine.similarity import top_k_matches
-from lumyn.policy.loader import load_policy
+from lumyn.policy.loader import load_policy, read_policy_text
 from lumyn.records.emit import RiskSignals, build_decision_record, compute_inputs_digest
 from lumyn.schemas.loaders import load_json_schema
 from lumyn.store.sqlite import SqliteStore
@@ -108,7 +108,7 @@ def decide(
                 policy_hash=loaded_policy.policy_hash,
                 policy_id=str(loaded_policy.policy["policy_id"]),
                 policy_version=str(loaded_policy.policy["policy_version"]),
-                policy_text=Path(cfg.policy_path).read_text(encoding="utf-8"),
+                policy_text=read_policy_text(cfg.policy_path),
             )
         except Exception as e:
             if _is_storage_error(e):
