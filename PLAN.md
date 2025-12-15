@@ -241,7 +241,7 @@ Acceptance criteria
 Testing requirements
 - unit tests for redaction determinism
 
-### Story 8.3 — Optional request signing (service mode)
+### Story 8.3 — Request signing (service mode)
 Paths
 - `src/lumyn/api/auth.py`
 
@@ -256,7 +256,7 @@ Testing requirements
 
 ## Epic 9 — Observability and performance baselines
 
-### Story 9.1 — Structured logs (and optional OpenTelemetry)
+### Story 9.1 — Structured logs and OpenTelemetry
 Paths
 - `src/lumyn/telemetry/logging.py`
 - `src/lumyn/telemetry/tracing.py`
