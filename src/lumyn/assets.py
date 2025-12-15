@@ -19,4 +19,3 @@ def read_builtin_text(relpath: str | Path) -> str:
         return base.joinpath(path_str).read_text(encoding="utf-8")
     except FileNotFoundError as e:
         raise FileNotFoundError(f"built-in asset not found: {path_str}") from e
-

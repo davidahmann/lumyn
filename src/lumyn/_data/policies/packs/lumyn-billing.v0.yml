@@ -40,4 +40,3 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [SPEND_SMALL_OK]
-

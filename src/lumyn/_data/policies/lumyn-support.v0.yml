@@ -220,4 +220,3 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [UPDATE_TICKET_OK]
-

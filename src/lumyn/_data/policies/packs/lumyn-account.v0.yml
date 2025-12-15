@@ -47,4 +47,3 @@ rules:
     then:
       verdict: TRUST
       reason_codes: [CHANGE_EMAIL_OK]
-

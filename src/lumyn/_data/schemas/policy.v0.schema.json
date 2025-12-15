@@ -67,4 +67,3 @@
     "extensions": { "type": "object", "additionalProperties": true, "default": {} }
   }
 }
-
