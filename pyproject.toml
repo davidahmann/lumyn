@@ -30,6 +30,7 @@ package = true
 [dependency-groups]
 dev = [
   "bandit>=1.7.9",
+  "pip-audit>=2.7.3",
   "detect-secrets>=1.5.0",
   "mypy>=1.11",
   "pre-commit>=3.7",

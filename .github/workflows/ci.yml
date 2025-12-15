@@ -39,5 +39,10 @@ jobs:
       - name: Typecheck (mypy)
         run: uv run mypy src
 
+      - name: Dependency audit (pip-audit)
+        run: |
+          uv export --format requirements.txt --no-dev --locked --no-emit-project --output-file requirements.txt
+          uv run pip-audit -r requirements.txt
+
       - name: Tests (pytest)
         run: uv run pytest -q
