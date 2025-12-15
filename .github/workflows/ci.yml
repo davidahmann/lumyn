@@ -102,7 +102,7 @@ jobs:
           lumyn doctor --fix --workspace .lumyn
           lumyn demo --workspace .lumyn --out demo.json
 
-          DECISION_ID="$(python -c 'import json; print(json.load(open(\"demo.json\"))[0][\"decision_id\"])')"
+          DECISION_ID="$(python -c 'import json; print(json.load(open("demo.json"))[0]["decision_id"])')"
           lumyn export "$DECISION_ID" --workspace .lumyn --pack --out decision_pack.zip
 
           lumyn convert decision_pack.zip --to v1 --out decision_pack_v1.zip
