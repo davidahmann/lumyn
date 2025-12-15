@@ -1,0 +1,16 @@
+{
+  "name": "update_ticket_trust",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-15", "tenant_id": "acme" },
+    "action": {
+      "type": "support.update_ticket",
+      "intent": "Update ticket with evidence",
+      "target": { "system": "zendesk", "resource_type": "ticket", "resource_id": "ZD-4002" }
+    },
+    "evidence": { "ticket_id": "ZD-4002" },
+    "context": { "mode": "digest_only", "digest": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff" }
+  },
+  "expect": { "verdict": "TRUST", "reason_codes_includes": ["UPDATE_TICKET_OK"] }
+}
+

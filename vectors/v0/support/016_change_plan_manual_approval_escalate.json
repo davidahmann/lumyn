@@ -1,0 +1,16 @@
+{
+  "name": "change_plan_manual_approval_escalate",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-16", "tenant_id": "acme" },
+    "action": {
+      "type": "support.change_plan",
+      "intent": "Change plan requires manual approval",
+      "target": { "system": "stripe", "resource_type": "subscription", "resource_id": "sub_001" }
+    },
+    "evidence": { "customer_id": "C-40", "manual_approval": true },
+    "context": { "mode": "digest_only", "digest": "sha256:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["MANUAL_APPROVAL_PRESENT_ESCALATE"] }
+}
+

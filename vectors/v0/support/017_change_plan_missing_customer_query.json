@@ -1,0 +1,16 @@
+{
+  "name": "change_plan_missing_customer_query",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-17", "tenant_id": "acme" },
+    "action": {
+      "type": "support.change_plan",
+      "intent": "Change plan missing customer_id",
+      "target": { "system": "stripe", "resource_type": "subscription", "resource_id": "sub_002" }
+    },
+    "evidence": {},
+    "context": { "mode": "digest_only", "digest": "sha256:fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_CHANGE_PLAN"] }
+}
+

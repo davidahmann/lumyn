@@ -1,0 +1,22 @@
+{
+  "name": "refund_high_payment_risk_abstain",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-5", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund with high payment instrument risk",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_005" },
+      "amount": { "value": 20.0, "currency": "USD" }
+    },
+    "evidence": {
+      "ticket_id": "ZD-1005",
+      "order_id": "ORD-88",
+      "customer_id": "C-13",
+      "payment_instrument_risk": "high"
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:5555555555555555555555555555555555555555555555555555555555555555" }
+  },
+  "expect": { "verdict": "ABSTAIN", "reason_codes_includes": ["PAYMENT_INSTRUMENT_HIGH_RISK"] }
+}
+

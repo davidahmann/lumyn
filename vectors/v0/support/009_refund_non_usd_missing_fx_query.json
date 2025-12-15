@@ -1,0 +1,17 @@
+{
+  "name": "refund_non_usd_missing_fx_query",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-9", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund non-USD amount without fx rate",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_009" },
+      "amount": { "value": 19.0, "currency": "EUR" }
+    },
+    "evidence": { "ticket_id": "ZD-1009", "order_id": "ORD-103", "customer_id": "C-17" },
+    "context": { "mode": "digest_only", "digest": "sha256:9999999999999999999999999999999999999999999999999999999999999999" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_FX_RATE"] }
+}
+

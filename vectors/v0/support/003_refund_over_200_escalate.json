@@ -1,0 +1,17 @@
+{
+  "name": "refund_over_200_escalate",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-3", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund large order",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_003" },
+      "amount": { "value": 201.0, "currency": "USD" }
+    },
+    "evidence": { "ticket_id": "ZD-1003", "order_id": "ORD-201", "customer_id": "C-11" },
+    "context": { "mode": "digest_only", "digest": "sha256:3333333333333333333333333333333333333333333333333333333333333333" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["REFUND_OVER_ESCALATION_LIMIT"] }
+}
+

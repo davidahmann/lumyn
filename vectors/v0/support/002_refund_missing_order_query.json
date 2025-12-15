@@ -1,0 +1,17 @@
+{
+  "name": "refund_missing_order_query",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-2", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund due to late delivery",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_002" },
+      "amount": { "value": 10.0, "currency": "USD" }
+    },
+    "evidence": { "ticket_id": "ZD-1002", "customer_id": "C-10" },
+    "context": { "mode": "digest_only", "digest": "sha256:2222222222222222222222222222222222222222222222222222222222222222" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_REFUND"] }
+}
+

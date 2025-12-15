@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumyn.dev/schemas/policy.v0.schema.json",
+  "title": "Lumyn Policy (v0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "policy_id", "policy_version", "defaults", "rules"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "policy.v0" },
+    "policy_id": { "type": "string", "minLength": 1 },
+    "policy_version": { "type": "string", "minLength": 1 },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "default_verdict", "default_reason_code"],
+      "properties": {
+        "mode": { "type": "string", "enum": ["enforce", "advisory"] },
+        "default_verdict": { "type": "string", "enum": ["TRUST", "ABSTAIN", "ESCALATE", "QUERY"] },
+        "default_reason_code": { "type": "string", "minLength": 1 }
+      }
+    },
+    "thresholds": { "type": "object", "additionalProperties": true, "default": {} },
+    "required_evidence": {
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "type": "string" } },
+      "default": {}
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "stage", "then"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "stage": {
+            "type": "string",
+            "enum": ["REQUIREMENTS", "HARD_BLOCKS", "ESCALATIONS", "TRUST_PATHS"]
+          },
+          "when": { "type": "object", "additionalProperties": true },
+          "if": { "type": "object", "additionalProperties": true },
+          "if_all": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "if_any": { "type": "array", "items": { "type": "object", "additionalProperties": true } },
+          "then": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["verdict", "reason_codes"],
+            "properties": {
+              "verdict": { "type": "string", "enum": ["TRUST", "ABSTAIN", "ESCALATE", "QUERY"] },
+              "reason_codes": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+              "queries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["field", "question"],
+                  "properties": { "field": { "type": "string" }, "question": { "type": "string" } }
+                }
+              },
+              "obligations": { "type": "array", "items": { "type": "object", "additionalProperties": true } }
+            }
+          }
+        }
+      }
+    },
+    "extensions": { "type": "object", "additionalProperties": true, "default": {} }
+  }
+}
+

@@ -1,0 +1,26 @@
+schema_version: policy.v0
+policy_id: lumyn-support
+policy_version: "0.1.0"
+
+defaults:
+  mode: enforce
+  default_verdict: ESCALATE
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
+
+thresholds:
+  refund_escalate_over_usd: 200
+
+required_evidence:
+  support.refund: [ticket_id, order_id, customer_id]
+
+rules:
+  - id: R001
+    stage: REQUIREMENTS
+    when: { action_type: support.refund }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_REFUND]
+      queries:
+        - field: evidence.order_id
+          question: What order_id is this refund for?
+

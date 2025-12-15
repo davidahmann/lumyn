@@ -1,0 +1,22 @@
+{
+  "name": "refund_chargeback_block_abstain",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-4", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund suspicious chargeback risk",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_004" },
+      "amount": { "value": 19.0, "currency": "USD" }
+    },
+    "evidence": {
+      "ticket_id": "ZD-1004",
+      "order_id": "ORD-99",
+      "customer_id": "C-12",
+      "chargeback_risk": 0.9
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:4444444444444444444444444444444444444444444444444444444444444444" }
+  },
+  "expect": { "verdict": "ABSTAIN", "reason_codes_includes": ["CHARGEBACK_RISK_BLOCK"] }
+}
+

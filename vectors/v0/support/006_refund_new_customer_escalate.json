@@ -1,0 +1,22 @@
+{
+  "name": "refund_new_customer_escalate",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-6", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund for very new customer",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_006" },
+      "amount": { "value": 25.0, "currency": "USD" }
+    },
+    "evidence": {
+      "ticket_id": "ZD-1006",
+      "order_id": "ORD-100",
+      "customer_id": "C-14",
+      "customer_age_days": 3
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:6666666666666666666666666666666666666666666666666666666666666666" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["NEW_CUSTOMER_REFUND_ESCALATE"] }
+}
+

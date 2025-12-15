@@ -14,4 +14,3 @@ If you cannot use GitHub advisories, open a GitHub issue titled `SECURITY: reque
 ## Supported versions
 
 This project is early-stage OSS. Security fixes are applied to `main` and shipped in the next tagged release.
-

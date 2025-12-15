@@ -1,0 +1,31 @@
+{
+  "schema_version": "reason_codes.v0",
+  "codes": [
+    {
+      "code": "NO_MATCH_DEFAULT_ESCALATE",
+      "description": "No rule matched; defaulting to escalation."
+    },
+    { "code": "INVALID_REQUEST_SCHEMA", "description": "Request failed schema validation." },
+    { "code": "INVALID_POLICY", "description": "Policy failed validation." },
+    { "code": "STORAGE_UNAVAILABLE", "description": "Persistence unavailable; decision blocked." },
+    { "code": "MISSING_EVIDENCE_REFUND", "description": "Missing required evidence for refund." },
+    { "code": "MISSING_EVIDENCE_CREDIT", "description": "Missing required evidence for credit issuance." },
+    { "code": "MISSING_EVIDENCE_CLOSE_TICKET", "description": "Missing required evidence for closing a ticket." },
+    { "code": "MISSING_EVIDENCE_UPDATE_TICKET", "description": "Missing required evidence for updating a ticket." },
+    { "code": "MISSING_EVIDENCE_CHANGE_PLAN", "description": "Missing required evidence for plan changes." },
+    { "code": "MISSING_EVIDENCE_RESET_PASSWORD", "description": "Missing required evidence for password resets." },
+    { "code": "REFUND_OVER_ESCALATION_LIMIT", "description": "Refund amount over escalation threshold." },
+    { "code": "REFUND_SMALL_LOW_RISK", "description": "Small refund with low risk; trusted." },
+    { "code": "CREDIT_SMALL", "description": "Small credit issuance allowed by policy." },
+    { "code": "REFUND_REPEAT_CUSTOMER", "description": "Refund requested by repeat-refund customer." },
+    { "code": "NEW_CUSTOMER_REFUND_ESCALATE", "description": "Refund requested for a new customer." },
+    { "code": "CHARGEBACK_RISK_ESCALATE", "description": "Chargeback risk over escalation threshold." },
+    { "code": "CHARGEBACK_RISK_BLOCK", "description": "Chargeback risk too high; refund blocked." },
+    { "code": "PAYMENT_INSTRUMENT_HIGH_RISK", "description": "Payment instrument risk too high; action blocked." },
+    { "code": "ACCOUNT_TAKEOVER_RISK_BLOCK", "description": "Account takeover risk too high; action blocked." },
+    { "code": "MANUAL_APPROVAL_PRESENT_ESCALATE", "description": "Manual approval required by workflow; escalated." },
+    { "code": "MISSING_FX_RATE", "description": "Amount not in USD and no fx rate provided; more info required." },
+    { "code": "CLOSE_TICKET_OK", "description": "Ticket close allowed by policy." },
+    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." }
+  ]
+}

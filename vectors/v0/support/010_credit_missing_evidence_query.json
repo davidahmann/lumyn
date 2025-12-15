@@ -1,0 +1,17 @@
+{
+  "name": "credit_missing_evidence_query",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-10", "tenant_id": "acme" },
+    "action": {
+      "type": "support.issue_credit",
+      "intent": "Issue apology credit",
+      "target": { "system": "zendesk", "resource_type": "ticket", "resource_id": "ZD-2001" },
+      "amount": { "value": 10.0, "currency": "USD" }
+    },
+    "evidence": { "ticket_id": "ZD-2001" },
+    "context": { "mode": "digest_only", "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_CREDIT"] }
+}
+

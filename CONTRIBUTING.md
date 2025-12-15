@@ -34,4 +34,3 @@ Expectations:
 - v0 schemas are additive-only (breaking changes require `*.v1`)
 - reason codes are stable strings
 - golden vectors must be updated for any behavior change
-

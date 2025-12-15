@@ -1,0 +1,44 @@
+{
+  "schema_version": "decision_record.v0",
+  "decision_id": "dec_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
+  "created_at": "2026-01-13T14:12:05Z",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "service", "id": "support-agent", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund duplicate charge for order 82731",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_123" },
+      "amount": { "value": 201.0, "currency": "USD" },
+      "tags": ["duplicate_charge"]
+    },
+    "evidence": { "ticket_id": "ZD-1001", "order_id": "82731", "customer_id": "C-9" },
+    "context": { "mode": "digest_only", "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" }
+  },
+  "policy": {
+    "policy_id": "lumyn-support",
+    "policy_version": "0.1.0",
+    "policy_hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "mode": "enforce"
+  },
+  "verdict": "ESCALATE",
+  "reason_codes": ["REFUND_OVER_ESCALATION_LIMIT"],
+  "matched_rules": [
+    {
+      "rule_id": "R008",
+      "stage": "ESCALATIONS",
+      "effect": "ESCALATE",
+      "reason_codes": ["REFUND_OVER_ESCALATION_LIMIT"]
+    }
+  ],
+  "risk_signals": {
+    "uncertainty_score": 0.12,
+    "failure_similarity": { "score": 0.07, "top_k": [] }
+  },
+  "determinism": {
+    "engine_version": "0.1.0",
+    "evaluation_order": ["REQUIREMENTS", "HARD_BLOCKS", "ESCALATIONS", "TRUST_PATHS", "DEFAULT"],
+    "inputs_digest": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+  }
+}
+

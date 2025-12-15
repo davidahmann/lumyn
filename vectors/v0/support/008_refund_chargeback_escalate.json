@@ -1,0 +1,22 @@
+{
+  "name": "refund_chargeback_escalate",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-8", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund with moderate chargeback risk",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_008" },
+      "amount": { "value": 30.0, "currency": "USD" }
+    },
+    "evidence": {
+      "ticket_id": "ZD-1008",
+      "order_id": "ORD-102",
+      "customer_id": "C-16",
+      "chargeback_risk": 0.5
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:8888888888888888888888888888888888888888888888888888888888888888" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["CHARGEBACK_RISK_ESCALATE"] }
+}
+

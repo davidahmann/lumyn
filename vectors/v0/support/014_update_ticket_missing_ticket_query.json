@@ -1,0 +1,16 @@
+{
+  "name": "update_ticket_missing_ticket_query",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-14", "tenant_id": "acme" },
+    "action": {
+      "type": "support.update_ticket",
+      "intent": "Update a ticket but missing ticket_id",
+      "target": { "system": "zendesk", "resource_type": "ticket", "resource_id": "ZD-4001" }
+    },
+    "evidence": {},
+    "context": { "mode": "digest_only", "digest": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" }
+  },
+  "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_UPDATE_TICKET"] }
+}
+

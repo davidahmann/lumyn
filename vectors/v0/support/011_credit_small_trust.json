@@ -1,0 +1,17 @@
+{
+  "name": "credit_small_trust",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-11", "tenant_id": "acme" },
+    "action": {
+      "type": "support.issue_credit",
+      "intent": "Issue small goodwill credit",
+      "target": { "system": "zendesk", "resource_type": "ticket", "resource_id": "ZD-2002" },
+      "amount": { "value": 10.0, "currency": "USD" }
+    },
+    "evidence": { "ticket_id": "ZD-2002", "customer_id": "C-20", "reason_code": "APOLOGY" },
+    "context": { "mode": "digest_only", "digest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" }
+  },
+  "expect": { "verdict": "TRUST", "reason_codes_includes": ["CREDIT_SMALL"] }
+}
+

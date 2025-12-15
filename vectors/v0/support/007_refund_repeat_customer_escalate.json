@@ -1,0 +1,22 @@
+{
+  "name": "refund_repeat_customer_escalate",
+  "request": {
+    "schema_version": "decision_request.v0",
+    "subject": { "type": "agent", "id": "agent-7", "tenant_id": "acme" },
+    "action": {
+      "type": "support.refund",
+      "intent": "Refund for repeat refund customer",
+      "target": { "system": "stripe", "resource_type": "charge", "resource_id": "ch_007" },
+      "amount": { "value": 15.0, "currency": "USD" }
+    },
+    "evidence": {
+      "ticket_id": "ZD-1007",
+      "order_id": "ORD-101",
+      "customer_id": "C-15",
+      "previous_refund_count_90d": 5
+    },
+    "context": { "mode": "digest_only", "digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777" }
+  },
+  "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["REFUND_REPEAT_CUSTOMER"] }
+}
+
