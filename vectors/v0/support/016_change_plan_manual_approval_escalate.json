@@ -13,4 +13,3 @@
   },
   "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["MANUAL_APPROVAL_PRESENT_ESCALATE"] }
 }
-

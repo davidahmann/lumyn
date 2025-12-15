@@ -23,4 +23,3 @@ rules:
       queries:
         - field: evidence.order_id
           question: What order_id is this refund for?
-

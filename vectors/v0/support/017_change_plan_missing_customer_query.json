@@ -13,4 +13,3 @@
   },
   "expect": { "verdict": "QUERY", "reason_codes_includes": ["MISSING_EVIDENCE_CHANGE_PLAN"] }
 }
-

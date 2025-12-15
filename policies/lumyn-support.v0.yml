@@ -1,0 +1,215 @@
+schema_version: policy.v0
+policy_id: lumyn-support
+policy_version: "0.1.0"
+
+defaults:
+  mode: enforce
+  default_verdict: ESCALATE
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
+
+thresholds:
+  refund_trust_max_usd: 25
+  refund_escalate_over_usd: 200
+  credit_trust_max_usd: 15
+  chargeback_risk_escalate: 0.35
+  chargeback_risk_abstain: 0.70
+  account_takeover_abstain: 0.70
+  refund_repeat_escalate_count_90d: 2
+  customer_age_escalate_days: 14
+
+required_evidence:
+  support.refund: [ticket_id, order_id, customer_id]
+  support.issue_credit: [ticket_id, customer_id, reason_code]
+  support.close_ticket: [ticket_id, resolution_code]
+  support.update_ticket: [ticket_id]
+  support.change_plan: [customer_id]
+  support.reset_password: [customer_id]
+
+rules:
+  # Requirements: require evidence per action (missing => QUERY)
+  - id: R001
+    stage: REQUIREMENTS
+    when: { action_type: support.refund }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_REFUND]
+      queries:
+        - field: evidence.ticket_id
+          question: What ticket_id justifies this refund?
+        - field: evidence.order_id
+          question: What order_id is this refund for?
+        - field: evidence.customer_id
+          question: What customer_id is this refund for?
+
+  - id: R002
+    stage: REQUIREMENTS
+    when: { action_type: support.issue_credit }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_CREDIT]
+      queries:
+        - field: evidence.ticket_id
+          question: What ticket_id justifies this credit?
+        - field: evidence.customer_id
+          question: What customer_id is this credit for?
+        - field: evidence.reason_code
+          question: What reason_code justifies this credit?
+
+  - id: R003
+    stage: REQUIREMENTS
+    when: { action_type: support.close_ticket }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_CLOSE_TICKET]
+      queries:
+        - field: evidence.ticket_id
+          question: What ticket_id is being closed?
+        - field: evidence.resolution_code
+          question: What resolution_code justifies closing the ticket?
+
+  - id: R004
+    stage: REQUIREMENTS
+    when: { action_type: support.update_ticket }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_UPDATE_TICKET]
+      queries:
+        - field: evidence.ticket_id
+          question: What ticket_id is being updated?
+
+  - id: R005
+    stage: REQUIREMENTS
+    when: { action_type: support.change_plan }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_CHANGE_PLAN]
+      queries:
+        - field: evidence.customer_id
+          question: What customer_id is this plan change for?
+
+  - id: R006
+    stage: REQUIREMENTS
+    when: { action_type: support.reset_password }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_EVIDENCE_RESET_PASSWORD]
+      queries:
+        - field: evidence.customer_id
+          question: What customer_id is this password reset for?
+
+  # Requirements: currency handling (no external FX calls in v1)
+  - id: R007
+    stage: REQUIREMENTS
+    when: { action_type: support.refund }
+    if_all:
+      - { amount_currency_ne: USD }
+      - { evidence.fx_rate_to_usd_present: false }
+    then:
+      verdict: QUERY
+      reason_codes: [MISSING_FX_RATE]
+      queries:
+        - field: evidence.fx_rate_to_usd
+          question: Provide fx_rate_to_usd to evaluate amount_usd.
+
+  # Hard blocks
+  - id: R020
+    stage: HARD_BLOCKS
+    when: { action_type_in: [support.refund, support.issue_credit] }
+    if: { evidence.payment_instrument_risk_is: high }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [PAYMENT_INSTRUMENT_HIGH_RISK]
+
+  - id: R021
+    stage: HARD_BLOCKS
+    when: { action_type: support.reset_password }
+    if: { evidence.account_takeover_risk_gte: 0.70 }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [ACCOUNT_TAKEOVER_RISK_BLOCK]
+
+  - id: R022
+    stage: HARD_BLOCKS
+    when: { action_type: support.refund }
+    if: { evidence.chargeback_risk_gte: 0.70 }
+    then:
+      verdict: ABSTAIN
+      reason_codes: [CHARGEBACK_RISK_BLOCK]
+
+  # Escalations
+  - id: R030
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { amount_usd_gt: 200 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [REFUND_OVER_ESCALATION_LIMIT]
+
+  - id: R031
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { evidence.previous_refund_count_90d_gte: 2 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [REFUND_REPEAT_CUSTOMER]
+
+  - id: R032
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { evidence.chargeback_risk_gte: 0.35 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [CHARGEBACK_RISK_ESCALATE]
+
+  - id: R033
+    stage: ESCALATIONS
+    when: { action_type: support.refund }
+    if: { evidence.customer_age_days_lt: 14 }
+    then:
+      verdict: ESCALATE
+      reason_codes: [NEW_CUSTOMER_REFUND_ESCALATE]
+
+  - id: R034
+    stage: ESCALATIONS
+    when: { action_type_in: [support.change_plan, support.reset_password] }
+    if: { evidence.manual_approval_is: true }
+    then:
+      verdict: ESCALATE
+      reason_codes: [MANUAL_APPROVAL_PRESENT_ESCALATE]
+
+  # Trust paths
+  - id: R050
+    stage: TRUST_PATHS
+    when: { action_type: support.refund }
+    if_all:
+      - { amount_usd_lte: 25 }
+      - { evidence.payment_instrument_risk_in: [low, medium] }
+      - { evidence.chargeback_risk_lt: 0.35 }
+      - { evidence.previous_refund_count_90d_lt: 2 }
+      - { evidence.customer_age_days_gte: 14 }
+    then:
+      verdict: TRUST
+      reason_codes: [REFUND_SMALL_LOW_RISK]
+
+  - id: R051
+    stage: TRUST_PATHS
+    when: { action_type: support.issue_credit }
+    if: { amount_usd_lte: 15 }
+    then:
+      verdict: TRUST
+      reason_codes: [CREDIT_SMALL]
+
+  - id: R052
+    stage: TRUST_PATHS
+    when: { action_type: support.close_ticket }
+    then:
+      verdict: TRUST
+      reason_codes: [CLOSE_TICKET_OK]
+
+  - id: R053
+    stage: TRUST_PATHS
+    when: { action_type: support.update_ticket }
+    then:
+      verdict: TRUST
+      reason_codes: [UPDATE_TICKET_OK]
+

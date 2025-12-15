@@ -19,4 +19,3 @@
   },
   "expect": { "verdict": "ESCALATE", "reason_codes_includes": ["NEW_CUSTOMER_REFUND_ESCALATE"] }
 }
-

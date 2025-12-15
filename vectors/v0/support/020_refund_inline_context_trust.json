@@ -18,4 +18,3 @@
   },
   "expect": { "verdict": "TRUST", "reason_codes_includes": ["REFUND_SMALL_LOW_RISK"] }
 }
-

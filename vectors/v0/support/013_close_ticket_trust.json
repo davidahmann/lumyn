@@ -13,4 +13,3 @@
   },
   "expect": { "verdict": "TRUST", "reason_codes_includes": ["CLOSE_TICKET_OK"] }
 }
-

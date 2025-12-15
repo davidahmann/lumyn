@@ -35,4 +35,3 @@ def test_examples_validate_against_schemas() -> None:
 
     policy = _load_yaml(Path("examples/policy_support.v0.yml"))
     Draft202012Validator(policy_schema).validate(policy)
-

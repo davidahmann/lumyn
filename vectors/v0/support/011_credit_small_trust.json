@@ -14,4 +14,3 @@
   },
   "expect": { "verdict": "TRUST", "reason_codes_includes": ["CREDIT_SMALL"] }
 }
-
