@@ -52,4 +52,3 @@ CREATE TABLE IF NOT EXISTS memory_items (
 );
 
 CREATE INDEX IF NOT EXISTS idx_memory_items_lookup ON memory_items (tenant_id, action_type, label, created_at);
-

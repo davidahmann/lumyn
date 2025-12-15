@@ -37,8 +37,8 @@ def test_vectors_v0_are_well_formed_and_schema_valid() -> None:
             "QUERY",
         }, f"{vector_path} invalid verdict"
         reason_codes_includes = expect.get("reason_codes_includes", [])
-        assert isinstance(
-            reason_codes_includes, list
-        ), f"{vector_path} reason_codes_includes not list"
+        assert isinstance(reason_codes_includes, list), (
+            f"{vector_path} reason_codes_includes not list"
+        )
         for code in reason_codes_includes:
             assert code in known_reason_codes, f"{vector_path} unknown reason code: {code}"

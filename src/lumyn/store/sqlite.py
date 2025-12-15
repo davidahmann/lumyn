@@ -78,7 +78,7 @@ class SqliteStore:
         )
 
         amount_value: float | None
-        if isinstance(amount.get("value"), (int, float)):
+        if isinstance(amount.get("value"), int | float):
             amount_value = float(amount["value"])
         else:
             amount_value = None

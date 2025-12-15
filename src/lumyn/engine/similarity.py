@@ -19,11 +19,11 @@ def _as_feature_set(feature: dict[str, Any]) -> set[str]:
             continue
         if isinstance(value, bool):
             keys.add(f"{key}={str(value).lower()}")
-        elif isinstance(value, (int, float, str)):
+        elif isinstance(value, int | float | str):
             keys.add(f"{key}={value}")
         elif isinstance(value, list):
             for item in value:
-                if isinstance(item, (int, float, str)):
+                if isinstance(item, int | float | str):
                     keys.add(f"{key}[]={item}")
         else:
             keys.add(f"{key}=<object>")
