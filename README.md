@@ -74,11 +74,15 @@ The MVP ships as:
 - a Python package + CLI (`lumyn`)
 - an optional local service (`POST /v0/decide`)
 
+Install (once published to PyPI):
+- `pip install lumyn`
+
 Key CLI workflows:
 - `lumyn init` (creates local SQLite + starter policy)
 - `lumyn demo` (emits a few real-looking Decision Records as JSON)
 - `lumyn decide --in request.json` (prints a Decision Record)
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`, `lumyn export <decision_id>`
+- `lumyn export <decision_id> --pack --out decision_pack.zip`
 - `lumyn label <decision_id> --label failure --summary "Bad outcome in prod"`
 - `lumyn policy validate` (validates `.lumyn/policy.yml`) or `lumyn policy validate --path ./policy.yml`
 - `lumyn doctor` (workspace health + counts)
@@ -88,6 +92,7 @@ Service mode (FastAPI):
 - Run with Uvicorn: `uv run uvicorn --factory lumyn.api.app:create_app --host 127.0.0.1 --port 8000`
 - Env config: `LUMYN_POLICY_PATH`, `LUMYN_STORAGE_URL` (e.g. `sqlite:.lumyn/lumyn.db`), `LUMYN_MODE`, `LUMYN_REDACTION_PROFILE`, `LUMYN_SIGNING_SECRET`
 - If `LUMYN_SIGNING_SECRET` is set, `POST /v0/decide` requires `X-Lumyn-Signature: sha256:<hmac(body)>` over the exact request body bytes.
+- `GET /v0/policy` returns `{policy_id, policy_version, policy_hash}` for the currently loaded policy.
 
 Docs:
 - `docs/quickstart.md`

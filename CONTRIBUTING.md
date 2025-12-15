@@ -34,3 +34,19 @@ Expectations:
 - v0 schemas are additive-only (breaking changes require `*.v1`)
 - reason codes are stable strings
 - golden vectors must be updated for any behavior change
+
+## Releasing
+
+Lumyn releases are cut by pushing a Git tag `vX.Y.Z` from `main`.
+
+Checklist:
+- Bump `version = "X.Y.Z"` in `pyproject.toml`
+- Update `CHANGELOG.md` (move items out of “Unreleased”)
+- Run `uv sync --dev && uv run pre-commit run --all-files && uv run pytest -q`
+- Create tag and push:
+  - `git tag -a vX.Y.Z -m "vX.Y.Z"`
+  - `git push origin vX.Y.Z`
+
+Automation:
+- GitHub Actions builds sdist/wheel and creates a GitHub Release.
+- PyPI publishing uses Trusted Publishing via OIDC; configure the `lumyn` project on PyPI to trust this repo/workflow.
