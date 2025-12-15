@@ -28,8 +28,8 @@ def main(
 
     store = SqliteStore(paths.db_path)
     # We rely on raw SQL access here for efficient polling of new rows
-    # The store API doesn't expose "get after ID" easily, so we extend it privately here or valid use
-    # of public connection
+    # The store API doesn't expose "get after ID" easily, so we extend it privately here or
+    # valid use of public connection
 
     typer.secho("Connecting to the Matrix...", fg=typer.colors.GREEN, bold=True)
     time.sleep(0.5)
