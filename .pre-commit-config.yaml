@@ -29,7 +29,7 @@ repos:
     rev: v1.11.2
     hooks:
       - id: mypy
-        args: ["--no-incremental", "--config-file=pyproject.toml", "src"]
+        args: ["--no-incremental", "--cache-dir=/tmp/lumyn_mypy_cache", "--config-file=pyproject.toml", "src"]
         pass_filenames: false
         additional_dependencies:
           - fastapi>=0.115

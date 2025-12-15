@@ -1,0 +1,42 @@
+name: Feature request
+description: Suggest an improvement to Lumyn.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / user story
+      description: What are you trying to do, and why is it hard today?
+      placeholder: As a ..., I want ..., so that ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should Lumyn do? Include UX/API shape if you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: What other options did you try?
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - label: Schemas / contracts
+        - label: Policy DSL
+        - label: Engine semantics / determinism
+        - label: Store / memory
+        - label: CLI
+        - label: Service (FastAPI)
+        - label: Docs / examples
+

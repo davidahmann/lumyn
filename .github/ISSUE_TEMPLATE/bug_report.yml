@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a reproducible problem in Lumyn.
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened and what did you expect to happen?
+      placeholder: Clear, concise description.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction steps
+      description: How can we reproduce this? Include minimal inputs if possible.
+      placeholder: |
+        1. uv sync --dev
+        2. uv run lumyn init
+        3. uv run lumyn decide --in ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Paste any relevant stack traces or CLI output.
+      render: shell
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Runtime details.
+      placeholder: |
+        OS:
+        Python:
+        Lumyn version:
+        Install method: (uv/pip/etc)
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: invariants
+    attributes:
+      label: Invariants affected (if known)
+      description: Lumyn has strict determinism/contracts; tell us if this touches them.
+      options:
+        - label: Schema validation / v0 contract
+        - label: Determinism drift (same inputs produce different outputs)
+        - label: Storage/persistence behavior
+        - label: CLI UX / docs
+
