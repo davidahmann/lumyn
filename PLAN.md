@@ -181,7 +181,7 @@ Testing requirements
 
 ---
 
-## Epic 6 — Optional service mode (FastAPI)
+## Epic 6 —  service mode (FastAPI)
 
 ### Story 6.1 — HTTP API wrapper
 Paths
