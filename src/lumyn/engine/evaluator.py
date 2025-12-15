@@ -60,16 +60,16 @@ def _eval_condition(key: str, expected: Any, normalized: NormalizedRequest) -> b
 
     if key == "amount_usd_gt":
         val = _value_from_key("amount_usd", normalized)
-        return isinstance(val, (int, float)) and val > float(expected)
+        return isinstance(val, int | float) and val > float(expected)
     if key == "amount_usd_gte":
         val = _value_from_key("amount_usd", normalized)
-        return isinstance(val, (int, float)) and val >= float(expected)
+        return isinstance(val, int | float) and val >= float(expected)
     if key == "amount_usd_lt":
         val = _value_from_key("amount_usd", normalized)
-        return isinstance(val, (int, float)) and val < float(expected)
+        return isinstance(val, int | float) and val < float(expected)
     if key == "amount_usd_lte":
         val = _value_from_key("amount_usd", normalized)
-        return isinstance(val, (int, float)) and val <= float(expected)
+        return isinstance(val, int | float) and val <= float(expected)
 
     if key == "evidence.fx_rate_to_usd_present":
         if not isinstance(expected, bool):
@@ -87,10 +87,10 @@ def _eval_condition(key: str, expected: Any, normalized: NormalizedRequest) -> b
 
     if key == "evidence.chargeback_risk_gte":
         val = _value_from_key("evidence.chargeback_risk", normalized)
-        return isinstance(val, (int, float)) and val >= float(expected)
+        return isinstance(val, int | float) and val >= float(expected)
     if key == "evidence.chargeback_risk_lt":
         val = _value_from_key("evidence.chargeback_risk", normalized)
-        return isinstance(val, (int, float)) and val < float(expected)
+        return isinstance(val, int | float) and val < float(expected)
 
     if key == "evidence.previous_refund_count_90d_gte":
         val = _value_from_key("evidence.previous_refund_count_90d", normalized)
@@ -108,7 +108,7 @@ def _eval_condition(key: str, expected: Any, normalized: NormalizedRequest) -> b
 
     if key == "evidence.account_takeover_risk_gte":
         val = _value_from_key("evidence.account_takeover_risk", normalized)
-        return isinstance(val, (int, float)) and val >= float(expected)
+        return isinstance(val, int | float) and val >= float(expected)
 
     if key == "evidence.manual_approval_is":
         val = _value_from_key("evidence.manual_approval", normalized)

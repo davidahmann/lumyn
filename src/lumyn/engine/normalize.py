@@ -26,7 +26,7 @@ def normalize_request(request: dict[str, Any]) -> NormalizedRequest:
         amount_currency = None
 
     amount_value_raw = amount.get("value")
-    amount_value = float(amount_value_raw) if isinstance(amount_value_raw, (int, float)) else None
+    amount_value = float(amount_value_raw) if isinstance(amount_value_raw, int | float) else None
 
     evidence: dict[str, object]
     if isinstance(evidence_raw, dict):
@@ -35,7 +35,7 @@ def normalize_request(request: dict[str, Any]) -> NormalizedRequest:
         evidence = {}
 
     fx_rate_raw = evidence.get("fx_rate_to_usd")
-    if isinstance(fx_rate_raw, (int, float)):
+    if isinstance(fx_rate_raw, int | float):
         fx_rate_to_usd_present = True
         fx_rate_to_usd: float | None = float(fx_rate_raw)
     else:
