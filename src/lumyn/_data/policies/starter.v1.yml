@@ -87,7 +87,7 @@ rules:
       verdict: ESCALATE
       reason_codes: [REFUND_REPEAT_CUSTOMER]
 
-  # Allow Paths
+  # Trust Paths
   - id: R050
     stage: ALLOW_PATHS
     when: { action_type: support.refund }
