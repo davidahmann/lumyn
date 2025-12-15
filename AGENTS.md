@@ -42,4 +42,3 @@ When code exists, keep these commands working:
 - `SPECS_SCHEMAS.md`: contracts, semantics, hashing/determinism rules
 - `PLAN.md`: epics/stories + acceptance + tests
 - `REPO_STRUCTURE.md`: intended OSS repo layout
-

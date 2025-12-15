@@ -19,8 +19,8 @@ you can replay during incidents.
 
 You wrap a risky action with `decide()`:
 
-1) you provide a `DecisionRequest` (subject, action, evidence, `context.digest`)  
-2) Lumyn evaluates deterministic policy + risk signals + experience similarity  
+1) you provide a `DecisionRequest` (subject, action, evidence, `context.digest`)
+2) Lumyn evaluates deterministic policy + risk signals + experience similarity
 3) Lumyn returns a `DecisionRecord` and persists it (append-only)
 
 The Decision Record is the unit you export into incidents, tickets, and postmortems.
