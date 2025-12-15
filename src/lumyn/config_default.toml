@@ -19,4 +19,3 @@ top_k = 5
 [service]
 # Optional shared-secret HMAC signing for POST /v0/decide (leave empty to disable)
 signing_secret = ""
-

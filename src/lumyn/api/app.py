@@ -8,11 +8,13 @@ from lumyn.api.routes_v0 import ApiV0Deps, build_routes_v0
 from lumyn.config import Settings, load_settings, storage_path_from_url
 from lumyn.core.decide import LumynConfig
 from lumyn.store.sqlite import SqliteStore
+from lumyn.telemetry.logging import configure_logging
 from lumyn.version import __version__
 
 
 def create_app(*, settings: Settings | None = None) -> FastAPI:
     settings = settings or load_settings()
+    configure_logging()
 
     store_path = storage_path_from_url(settings.lumyn.storage_url)
     store = SqliteStore(store_path)
