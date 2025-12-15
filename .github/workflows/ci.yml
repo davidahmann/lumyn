@@ -109,6 +109,25 @@ jobs:
               b = (bundle_dir / name).read_bytes()
               if a != b:
                   raise SystemExit(f"Bundled schema differs from repo: {name}")
+
+          # Check policies/ -> src/lumyn/_data/policies/
+          repo_policies = Path("policies")
+          bundle_policies = Path("src/lumyn/_data/policies")
+          # Only check root policies like starter.*.yml for now, ignoring packs subdir if complex
+          repo_p_files = sorted(p.name for p in repo_policies.glob("*.yml"))
+          bundle_p_files = sorted(p.name for p in bundle_policies.glob("*.yml"))
+          
+          # We expect everything in repo/policies roots to be in bundle
+          # (e.g. lumyn-support.v0.yml, starter.v1.yml)
+          for name in repo_p_files:
+              if name not in bundle_p_files:
+                  raise SystemExit(f"Missing bundled policy: {name}")
+              
+              a = (repo_policies / name).read_bytes()
+              b = (bundle_policies / name).read_bytes()
+              if a != b:
+                  raise SystemExit(f"Bundled policy differs from repo: {name}")
+                  
           print("ok")
           PY
 
@@ -171,3 +190,42 @@ jobs:
           lumyn export "$DECISION_ID" --workspace .lumyn --pack --out decision_pack.zip
 
           lumyn convert decision_pack.zip --to v1 --out decision_pack_v1.zip
+
+          # --- v1 Smoke Test ---
+          echo "Running v1 smoke tests..."
+          SMOKE_V1_DIR="/tmp/lumyn-smoke-v1"
+          rm -rf "$SMOKE_V1_DIR"
+          
+          # 1. Init (should be v1 by default now)
+          lumyn init --workspace "$SMOKE_V1_DIR"
+          if ! grep -q "schema_version: policy.v1" "$SMOKE_V1_DIR/policy.yml"; then
+            echo "Error: lumyn init failed to create policy.v1"
+            exit 1
+          fi
+
+          # 2. Decide v1 (using inline input for simplicity if verifyable, but decide CLI reads stdin or file)
+          # We'll create a minimal v1 request
+          cat <<EOF > "$SMOKE_V1_DIR/req.json"
+          {
+            "schema_version": "decision_request.v1",
+            "request_id": "smoke_req_1",
+            "tenant": {"tenant_id": "t1"},
+            "subject": {"type": "user", "id": "u1"},
+            "action": {"type": "support.refund", "intent": "smoke test", "amount": {"value": 10.0, "currency": "USD"}},
+            "context": {"mode": "digest_only", "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"},
+            "evidence": {}
+          }
+          EOF
+          
+          lumyn decide "$SMOKE_V1_DIR/req.json" --workspace "$SMOKE_V1_DIR" > "$SMOKE_V1_DIR/out.json"
+          if ! grep -q '"verdict":' "$SMOKE_V1_DIR/out.json"; then
+             echo "Error: lumyn decide v1 failed"
+             cat "$SMOKE_V1_DIR/out.json"
+             exit 1
+          fi
+
+          # 3. Migrate
+          # We'll re-use the v0 policy from the older smoke dir if available, or just skip complexity.
+          # We have unit tests for migrate. Let's just run help to ensure it loads.
+          lumyn migrate --help
+

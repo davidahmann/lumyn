@@ -40,9 +40,38 @@ def test_failure_similarity_escalates_after_label(tmp_path: Path) -> None:
     request2_path = tmp_path / "request2.json"
     request2_path.write_text(json.dumps(req2), encoding="utf-8")
 
+    request2_path.write_text(json.dumps(req2), encoding="utf-8")
+
+    # Explicitly init v0 policy for legacy test
+    runner.invoke(
+        app,
+        [
+            "init",
+            "--workspace",
+            str(workspace),
+            "--policy-template",
+            "policies/lumyn-support.v0.yml",
+        ],
+    )
+
     first = runner.invoke(
         app,
         ["decide", "--workspace", str(workspace), "--in", str(request1_path)],
+    )  # Explicitly init v0 policy for legacy test
+    runner.invoke(
+        app,
+        [
+            "init",
+            "--workspace",
+            str(workspace),
+            "--policy-template",
+            "policies/lumyn-support.v0.yml",
+        ],
+    )
+
+    first = runner.invoke(
+        app,
+        ["decide", "--workspace", str(workspace), str(request1_path)],
     )
     assert first.exit_code == 0
     first_record = json.loads(first.stdout)
@@ -66,7 +95,7 @@ def test_failure_similarity_escalates_after_label(tmp_path: Path) -> None:
 
     second = runner.invoke(
         app,
-        ["decide", "--workspace", str(workspace), "--in", str(request2_path)],
+        ["decide", "--workspace", str(workspace), str(request2_path)],
     )
     assert second.exit_code == 0
     second_record = json.loads(second.stdout)

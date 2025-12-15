@@ -78,7 +78,7 @@ def test_markdown_ticket_summary_is_capped(tmp_path: Path) -> None:
 
     decided = runner.invoke(
         app,
-        ["decide", "--workspace", str(workspace), "--in", str(request_path)],
+        ["decide", "--workspace", str(workspace), str(request_path)],
     )
     assert decided.exit_code == 0, decided.stdout
     record = json.loads(decided.stdout)

@@ -37,9 +37,21 @@ def test_cli_export_pack_zip_contains_policy_snapshot(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
+    # Explicitly init v0 policy for legacy test
+    runner.invoke(
+        app,
+        [
+            "init",
+            "--workspace",
+            str(workspace),
+            "--policy-template",
+            "policies/lumyn-support.v0.yml",
+        ],
+    )
+
     decided = runner.invoke(
         app,
-        ["decide", "--workspace", str(workspace), "--in", str(request_path)],
+        ["decide", "--workspace", str(workspace), str(request_path)],
     )
     assert decided.exit_code == 0
     record = json.loads(decided.stdout)

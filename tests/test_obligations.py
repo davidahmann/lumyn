@@ -39,9 +39,19 @@ def test_decision_record_includes_obligations_when_policy_sets_them(tmp_path: Pa
         encoding="utf-8",
     )
 
-    decided = runner.invoke(
-        app, ["decide", "--workspace", str(workspace), "--in", str(request_path)]
+    # Explicitly init v0 policy for legacy test
+    runner.invoke(
+        app,
+        [
+            "init",
+            "--workspace",
+            str(workspace),
+            "--policy-template",
+            "policies/lumyn-support.v0.yml",
+        ],
     )
+
+    decided = runner.invoke(app, ["decide", "--workspace", str(workspace), str(request_path)])
     assert decided.exit_code == 0
     record = json.loads(decided.stdout)
     obligations = record.get("obligations", [])
@@ -80,9 +90,19 @@ def test_cli_explain_markdown_includes_obligations(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    decided = runner.invoke(
-        app, ["decide", "--workspace", str(workspace), "--in", str(request_path)]
+    # Explicitly init v0 policy for legacy test
+    runner.invoke(
+        app,
+        [
+            "init",
+            "--workspace",
+            str(workspace),
+            "--policy-template",
+            "policies/lumyn-support.v0.yml",
+        ],
     )
+
+    decided = runner.invoke(app, ["decide", "--workspace", str(workspace), str(request_path)])
     assert decided.exit_code == 0
     record = json.loads(decided.stdout)
     decision_id = record["decision_id"]
