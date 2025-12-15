@@ -216,6 +216,7 @@ Lumyn is not:
 - `docs/quickstart.md`
 - `docs/integration_checklist.md`
 - `docs/architecture.md`
+- `docs/migration_v0_to_v1.md`
 
 ## Design principles
 

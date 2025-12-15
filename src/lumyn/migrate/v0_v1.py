@@ -14,9 +14,9 @@ def verdict_v0_to_v1(verdict_v0: str) -> str:
     if verdict_v0 == "TRUST":
         return "ALLOW"
     if verdict_v0 == "QUERY":
-        # v0 QUERY means "more info required"; in the v1 four-outcome model this is ABSTAIN
-        # (caller should not take action, and should consult `queries` for required fields).
-        return "ABSTAIN"
+        # v0 QUERY means "deny until evidence"; v1 callers should not take action and should
+        # consult `queries` for required fields.
+        return "DENY"
     if verdict_v0 in {"ABSTAIN", "ESCALATE"}:
         return verdict_v0
     raise ValueError(f"unknown v0 verdict: {verdict_v0}")

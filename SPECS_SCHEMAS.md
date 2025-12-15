@@ -33,7 +33,7 @@ v1 uses the four-outcome model: `ALLOW | DENY | ABSTAIN | ESCALATE`.
 
 The current v0→v1 mapping is:
 - `TRUST` → `ALLOW`
-- `QUERY` → `ABSTAIN` (caller should consult `queries` for required fields)
+- `QUERY` → `DENY` (deny-until-evidence; caller should consult `queries` for required fields)
 
 ## Deterministic IDs, canonicalization, and digests
 

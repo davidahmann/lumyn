@@ -47,6 +47,71 @@ jobs:
             exit 1
           fi
 
+      - name: Schema immutability (v1 schemas)
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          CHANGED="$(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- schemas || true)"
+          echo "$CHANGED"
+          if echo "$CHANGED" | grep -E '^schemas/.*\.v1\.schema\.json$' -q; then
+            echo "Error: v1 schema files are immutable. Add a new vN schema instead."
+            exit 1
+          fi
+
+      - name: Reason codes (v1 append-only)
+        if: github.event_name == 'pull_request'
+        run: |
+          BASE_SHA="${{ github.event.pull_request.base.sha }}"
+          if ! git diff --name-only "$BASE_SHA" "$GITHUB_SHA" -- schemas/reason_codes.v1.json | grep -q .; then
+            echo "reason_codes.v1.json unchanged"
+            exit 0
+          fi
+          python - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+          base_sha = subprocess.check_output(["bash", "-lc", "echo $BASE_SHA"], text=True).strip()
+          head_sha = subprocess.check_output(["bash", "-lc", "echo $GITHUB_SHA"], text=True).strip()
+          def load_at(sha: str) -> dict:
+              raw = subprocess.check_output(["git", "show", f"{sha}:schemas/reason_codes.v1.json"], text=True)
+              return json.loads(raw)
+          old = load_at(base_sha)
+          new = json.loads(Path("schemas/reason_codes.v1.json").read_text(encoding="utf-8"))
+          old_codes = {c["code"]: c.get("description") for c in old.get("codes", []) if isinstance(c, dict) and isinstance(c.get("code"), str)}
+          new_codes = {c["code"]: c.get("description") for c in new.get("codes", []) if isinstance(c, dict) and isinstance(c.get("code"), str)}
+          missing = sorted(set(old_codes) - set(new_codes))
+          if missing:
+              raise SystemExit(f"Error: v1 reason codes removed: {missing}")
+          changed = sorted([code for code, desc in old_codes.items() if new_codes.get(code) != desc])
+          if changed:
+              raise SystemExit(f"Error: v1 reason code descriptions changed (not allowed): {changed}")
+          PY
+
+      - name: Bundled assets parity
+        run: |
+          python - <<'PY'
+          from __future__ import annotations
+          from pathlib import Path
+          repo_dir = Path("schemas")
+          bundle_dir = Path("src/lumyn/_data/schemas")
+          repo_files = sorted(p.name for p in repo_dir.glob("*.json"))
+          bundle_files = sorted(p.name for p in bundle_dir.glob("*.json"))
+          missing_in_bundle = sorted(set(repo_files) - set(bundle_files))
+          extra_in_bundle = sorted(set(bundle_files) - set(repo_files))
+          if missing_in_bundle or extra_in_bundle:
+              raise SystemExit(
+                  "Bundled schemas mismatch.\n"
+                  f"missing_in_bundle={missing_in_bundle}\n"
+                  f"extra_in_bundle={extra_in_bundle}"
+              )
+          for name in repo_files:
+              a = (repo_dir / name).read_bytes()
+              b = (bundle_dir / name).read_bytes()
+              if a != b:
+                  raise SystemExit(f"Bundled schema differs from repo: {name}")
+          print("ok")
+          PY
+
       - name: Lint (ruff)
         run: |
           uv run ruff format --check .

@@ -4,6 +4,7 @@ from pathlib import Path
 
 import typer
 
+from lumyn.cli.markdown import render_ticket_summary_markdown
 from lumyn.store.sqlite import SqliteStore
 
 from ..util import die, resolve_workspace_paths
@@ -37,6 +38,7 @@ def main(
         reason_codes = raw_reason_codes
     else:
         reason_codes = []
+    reason_codes_str = [str(x) for x in reason_codes]
 
     raw_matched_rules = record.get("matched_rules")
     matched_rules: list[object]
@@ -81,53 +83,29 @@ def main(
         context = {}
 
     if markdown:
-        typer.echo(f"# Lumyn decision `{record.get('decision_id')}`")
-        typer.echo(f"- created_at: `{record.get('created_at')}`")
-        typer.echo(f"- verdict: `{verdict}`")
-        typer.echo(f"- reason_codes: `{', '.join([str(x) for x in reason_codes]) or '(none)'}`")
-        typer.echo(f"- policy_hash: `{policy.get('policy_hash')}`")
-        typer.echo(f"- context_digest: `{context.get('digest')}`")
-        typer.echo(f"- inputs_digest: `{determinism.get('inputs_digest')}`")
-        if matched_rules:
-            typer.echo("")
-            typer.echo("## Matched rules")
-            for r in matched_rules:
-                if not isinstance(r, dict):
-                    continue
-                typer.echo(
-                    f"- `{r.get('stage')}:{r.get('rule_id')}` "
-                    f"effect=`{r.get('effect')}` "
-                    f"reasons=`{r.get('reason_codes')}`"
-                )
-        if obligations:
-            typer.echo("")
-            typer.echo("## Obligations")
-            for item in obligations:
-                if not isinstance(item, dict):
-                    continue
-                obligation_type = item.get("type")
-                title = item.get("title")
-                details = item.get("details")
-                source = item.get("source")
-                parts: list[str] = []
-                if isinstance(obligation_type, str) and obligation_type:
-                    parts.append(f"type=`{obligation_type}`")
-                if isinstance(title, str) and title:
-                    parts.append(f"title={title!r}")
-                if isinstance(source, dict):
-                    stage = source.get("stage")
-                    rule_id = source.get("rule_id")
-                    if isinstance(stage, str) and isinstance(rule_id, str):
-                        parts.append(f"source=`{stage}:{rule_id}`")
-                if isinstance(details, str) and details:
-                    parts.append(f"details={details!r}")
-                typer.echo(f"- {' '.join(parts) if parts else str(item)}")
+        typer.echo(
+            render_ticket_summary_markdown(
+                decision_id=str(record.get("decision_id")) if record.get("decision_id") else None,
+                created_at=str(record.get("created_at")) if record.get("created_at") else None,
+                verdict=str(verdict) if verdict is not None else None,
+                reason_codes=reason_codes_str,
+                policy_hash=str(policy.get("policy_hash")) if policy.get("policy_hash") else None,
+                context_digest=str(context.get("digest")) if context.get("digest") else None,
+                inputs_digest=(
+                    str(determinism.get("inputs_digest"))
+                    if determinism.get("inputs_digest")
+                    else None
+                ),
+                matched_rules=[r for r in matched_rules if isinstance(r, dict)],
+                obligations=[o for o in obligations if isinstance(o, dict)],
+            ).rstrip("\n")
+        )
         return
 
     typer.echo(f"decision_id: {record.get('decision_id')}")
     typer.echo(f"created_at: {record.get('created_at')}")
     typer.echo(f"verdict: {verdict}")
-    typer.echo(f"reason_codes: {', '.join([str(x) for x in reason_codes]) or '(none)'}")
+    typer.echo(f"reason_codes: {', '.join(reason_codes_str) or '(none)'}")
     if matched_rules:
         typer.echo("matched_rules:")
         for r in matched_rules:

@@ -9,6 +9,7 @@ import typer
 import yaml
 from jsonschema import Draft202012Validator
 
+from lumyn.cli.markdown import render_ticket_summary_markdown
 from lumyn.engine.normalize import normalize_request
 from lumyn.policy.loader import compute_policy_hash
 from lumyn.policy.validate import validate_policy_or_raise
@@ -18,6 +19,15 @@ from lumyn.schemas.loaders import load_json_schema
 from ..util import die
 
 app = typer.Typer(help="Validate and summarize a Lumyn decision pack (ZIP).")
+
+_REQUEST_SCHEMA_BY_VERSION = {
+    "decision_request.v0": "schemas/decision_request.v0.schema.json",
+    "decision_request.v1": "schemas/decision_request.v1.schema.json",
+}
+_RECORD_SCHEMA_BY_VERSION = {
+    "decision_record.v0": "schemas/decision_record.v0.schema.json",
+    "decision_record.v1": "schemas/decision_record.v1.schema.json",
+}
 
 
 def _zip_read_json(zf: zipfile.ZipFile, name: str) -> dict[str, Any]:
@@ -38,6 +48,21 @@ def _zip_read_text(zf: zipfile.ZipFile, name: str) -> str:
         die(f"missing {name} in pack")
 
 
+def _decision_request_for_inputs_digest(request: dict[str, Any]) -> dict[str, Any]:
+    """
+    v1 preview compatibility:
+    - `determinism.inputs_digest` is computed by the v0 engine.
+    - Converting a pack to v1 changes only `schema_version`.
+    - For replay, compute the digest over the v0-equivalent request.
+    """
+    schema_version = request.get("schema_version")
+    if schema_version == "decision_request.v1":
+        out = dict(request)
+        out["schema_version"] = "decision_request.v0"
+        return out
+    return request
+
+
 @app.callback(invoke_without_command=True)
 def main(
     pack_path: Path = typer.Argument(..., help="Decision pack ZIP path."),
@@ -49,15 +74,32 @@ def main(
     if pack_path.suffix.lower() != ".zip":
         die("pack_path must be a .zip file")
 
-    request_schema = load_json_schema("schemas/decision_request.v0.schema.json")
-    record_schema = load_json_schema("schemas/decision_record.v0.schema.json")
-    policy_schema_path = "schemas/policy.v0.schema.json"
-    reason_codes_path = "schemas/reason_codes.v0.json"
-
     with zipfile.ZipFile(pack_path) as zf:
         record = _zip_read_json(zf, "decision_record.json")
         request = _zip_read_json(zf, "request.json")
         policy_text = _zip_read_text(zf, "policy.yml")
+
+    raw_record_schema_version = record.get("schema_version")
+    record_schema_version = (
+        raw_record_schema_version
+        if isinstance(raw_record_schema_version, str)
+        else "decision_record.v0"
+    )
+    record_schema_path = _RECORD_SCHEMA_BY_VERSION.get(
+        record_schema_version, "schemas/decision_record.v0.schema.json"
+    )
+    record_schema = load_json_schema(record_schema_path)
+
+    raw_request_schema_version = request.get("schema_version")
+    request_schema_version = (
+        raw_request_schema_version
+        if isinstance(raw_request_schema_version, str)
+        else "decision_request.v0"
+    )
+    request_schema_path = _REQUEST_SCHEMA_BY_VERSION.get(
+        request_schema_version, "schemas/decision_request.v0.schema.json"
+    )
+    request_schema = load_json_schema(request_schema_path)
 
     Draft202012Validator(record_schema).validate(record)
     Draft202012Validator(request_schema).validate(request)
@@ -65,6 +107,17 @@ def main(
     policy_obj = yaml.safe_load(policy_text)
     if not isinstance(policy_obj, dict):
         die("policy.yml did not parse to an object")
+    policy_schema_version = policy_obj.get("schema_version")
+    policy_schema_path = (
+        "schemas/policy.v1.schema.json"
+        if policy_schema_version == "policy.v1"
+        else "schemas/policy.v0.schema.json"
+    )
+    reason_codes_path = (
+        "schemas/reason_codes.v1.json"
+        if policy_schema_version == "policy.v1"
+        else "schemas/reason_codes.v0.json"
+    )
     validate_policy_or_raise(
         policy_obj, policy_schema_path=policy_schema_path, reason_codes_path=reason_codes_path
     )
@@ -81,8 +134,9 @@ def main(
     if expected_hash != policy_hash:
         die(f"policy_hash mismatch: record={expected_hash} computed={policy_hash}")
 
-    normalized = normalize_request(request)
-    computed_inputs_digest = compute_inputs_digest(request, normalized=normalized)
+    digest_request = _decision_request_for_inputs_digest(request)
+    normalized = normalize_request(digest_request)
+    computed_inputs_digest = compute_inputs_digest(digest_request, normalized=normalized)
     raw_determinism = record.get("determinism")
     determinism: dict[str, Any]
     if isinstance(raw_determinism, dict):
@@ -119,18 +173,23 @@ def main(
         context = {}
 
     if markdown:
-        typer.echo(f"# Lumyn decision `{decision_id}`")
-        typer.echo(f"- verdict: `{verdict}`")
-        typer.echo(f"- reason_codes: `{', '.join([str(x) for x in reason_codes]) or '(none)'}`")
-        typer.echo(f"- policy_hash: `{policy_hash}`")
-        typer.echo(f"- context_digest: `{context.get('digest')}`")
-        typer.echo(f"- inputs_digest: `{computed_inputs_digest}`")
-        if obligations:
-            typer.echo(f"- obligations: `{len(obligations)}`")
-            typer.echo("")
-            typer.echo("## Obligations")
-            for item in obligations:
-                typer.echo(f"- {item}")
+        typer.echo(
+            render_ticket_summary_markdown(
+                decision_id=str(decision_id) if decision_id is not None else None,
+                created_at=str(record.get("created_at")) if record.get("created_at") else None,
+                verdict=str(verdict) if verdict is not None else None,
+                reason_codes=[str(x) for x in reason_codes],
+                policy_hash=policy_hash,
+                context_digest=str(context.get("digest")) if context.get("digest") else None,
+                inputs_digest=computed_inputs_digest,
+                matched_rules=[
+                    r for r in (record.get("matched_rules") or []) if isinstance(r, dict)
+                ]
+                if isinstance(record.get("matched_rules"), list)
+                else [],
+                obligations=[o for o in obligations if isinstance(o, dict)],
+            ).rstrip("\n")
+        )
     else:
         typer.echo("ok")
         typer.echo(f"decision_id: {decision_id}")
