@@ -18,8 +18,8 @@ def _p95_ms(samples_ms: list[float]) -> float:
 
 
 def test_decide_p95_smoke(tmp_path: Path) -> None:
-    if os.getenv("LUMYN_RUN_PERF") != "1":
-        pytest.skip("set LUMYN_RUN_PERF=1 to run perf smoke")
+    if os.getenv("LUMYN_SKIP_PERF") == "1":
+        pytest.skip("set LUMYN_SKIP_PERF=1 to skip perf smoke")
 
     p95_budget_ms = float(os.getenv("LUMYN_P95_MS", "50"))
 
