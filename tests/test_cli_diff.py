@@ -106,7 +106,7 @@ rules:
     return dataset_path, policy_path, policy_loose_path
 
 
-def test_diff_regressions(diff_workspace):
+def test_diff_regressions(diff_workspace) -> None:
     dataset, strict_policy, _ = diff_workspace
 
     # Run diff with strict policy -> Should find regressions
@@ -123,7 +123,7 @@ def test_diff_regressions(diff_workspace):
     assert "rec_002" not in result.stdout  # Should be same (DENY -> DENY)
 
 
-def test_diff_clean(diff_workspace):
+def test_diff_clean(diff_workspace) -> None:
     dataset, _, loose_policy = diff_workspace
 
     # Run diff with loose policy -> Should match

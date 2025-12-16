@@ -16,7 +16,7 @@ def clean_store():
         os.remove(store_path)
 
 
-def test_decide_v1_basic_flow(clean_store):
+def test_decide_v1_basic_flow(clean_store) -> None:
     # Setup
     config = LumynConfig(
         store_path=clean_store, policy_path="policies/lumyn-support.v0.yml"

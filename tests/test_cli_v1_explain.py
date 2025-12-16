@@ -40,7 +40,7 @@ def clean_env():
         shutil.rmtree(workspace_dir)
 
 
-def test_explain_v1_record(clean_env, capsys):
+def test_explain_v1_record(clean_env, capsys) -> None:
     workspace_dir, store_path, policy_path = clean_env
 
     # Create and persist a v1 record

@@ -21,7 +21,7 @@ def clean_workspace():
         shutil.rmtree(workspace)
 
 
-def test_init_creates_v1_policy(clean_workspace):
+def test_init_creates_v1_policy(clean_workspace) -> None:
     result = runner.invoke(app, ["--workspace", clean_workspace])
     assert result.exit_code == 0
 

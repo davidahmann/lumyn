@@ -22,10 +22,11 @@ def test_decide_abstains_if_storage_unavailable(tmp_path: Path) -> None:
     store = SqliteStore(cfg.store_path)
     store.init()
 
-    def _boom(_: dict[str, object]) -> None:
+    from typing import Any
+    def _boom(_: dict[str, Any]) -> None:
         raise OSError("disk full")
 
-    store.put_decision_record = _boom  # type: ignore[method-assign]
+    store.put_decision_record = _boom  # type: ignore[assignment]
 
     record = decide(request, config=cfg, store=store)
     assert record["verdict"] == "ABSTAIN"

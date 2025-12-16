@@ -62,7 +62,7 @@ def test_sqlite_store_init_and_roundtrip_decision(tmp_path: Path) -> None:
     store.put_decision_record(record)
 
     store2 = SqliteStore(db_path)
-    got = store2.get_decision_record(record["decision_id"])
+    got = store2.get_decision_record(str(record["decision_id"]))
     assert got == record
 
 

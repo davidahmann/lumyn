@@ -1,5 +1,6 @@
 import os
 import shutil
+from collections.abc import Generator
 from pathlib import Path
 
 import pytest
@@ -9,7 +10,7 @@ from lumyn.cli.commands.migrate import main as migrate_main
 
 
 @pytest.fixture
-def clean_workspace():
+def clean_workspace() -> Generator[str, None, None]:
     workspace = ".lumyn_test_migrate_v1"
     if os.path.exists(workspace):
         shutil.rmtree(workspace)
@@ -19,7 +20,7 @@ def clean_workspace():
         shutil.rmtree(workspace)
 
 
-def test_migrate_v0_policy(clean_workspace):
+def test_migrate_v0_policy(clean_workspace) -> None:
     # Copy v0 policy to workspace
     src_policy = Path("policies/lumyn-support.v0.yml")
     v0_path = Path(clean_workspace) / "policy.v0.yml"
@@ -50,6 +51,8 @@ def test_migrate_v0_policy(clean_workspace):
     assert "amount_currency_ne" in r007["if_all"][0]  # Check logic preservation
 
     # Check verdict mapping
+    # Check verdict mapping
     r001 = next((r for r in rules if r["id"] == "R001"), None)
+    assert r001 is not None
     # R001 was QUERY in v0, should be DENY in v1
     assert r001["then"]["verdict"] == "DENY"

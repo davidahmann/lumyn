@@ -6,7 +6,7 @@ from lumyn.policy.errors import PolicyError
 from lumyn.policy.loader import load_policy
 
 
-def test_v1_policy_validation_rejects_unsupported_keys(tmp_path: Path):
+def test_v1_policy_validation_rejects_unsupported_keys(tmp_path: Path) -> None:
     policy_text = """
 schema_version: policy.v1
 policy_id: test-invalid-keys
@@ -33,7 +33,7 @@ rules:
     assert "unsupported condition key: evidence.unsupported_key_raw" in str(exc.value)
 
 
-def test_v1_policy_validation_accepts_valid_suffixes(tmp_path: Path):
+def test_v1_policy_validation_accepts_valid_suffixes(tmp_path: Path) -> None:
     policy_text = """
 schema_version: policy.v1
 policy_id: test-valid-keys

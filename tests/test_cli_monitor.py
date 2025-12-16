@@ -8,7 +8,7 @@ from lumyn.store.sqlite import SqliteStore
 runner = CliRunner()
 
 
-def test_monitor_reads_existing(tmp_path):
+def test_monitor_reads_existing(tmp_path) -> None:
     # Setup workspace
     ws = tmp_path / "ws"
     ws.mkdir()
