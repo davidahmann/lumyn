@@ -23,6 +23,7 @@ def test_decide_abstains_if_storage_unavailable(tmp_path: Path) -> None:
     store.init()
 
     from typing import Any
+
     def _boom(_: dict[str, Any]) -> None:
         raise OSError("disk full")
 

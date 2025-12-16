@@ -53,9 +53,7 @@ def test_requirements_missing_evidence(
     assert any(q["field"] == "evidence.ticket_id" for q in record["queries"])
 
 
-def test_hard_block_sanctions(
-    starter_policy_v1: dict[str, Any], clean_store_golden: str
-) -> None:
+def test_hard_block_sanctions(starter_policy_v1: dict[str, Any], clean_store_golden: str) -> None:
     # R020: High risk payment -> ABSTAIN
     request = {
         "schema_version": "decision_request.v1",
@@ -118,9 +116,7 @@ def test_escalation_large_amount(
     assert "REFUND_OVER_ESCALATION_LIMIT" in record["reason_codes"]
 
 
-def test_trust_path_allow(
-    starter_policy_v1: dict[str, Any], clean_store_golden: str
-) -> None:
+def test_trust_path_allow(starter_policy_v1: dict[str, Any], clean_store_golden: str) -> None:
     # R050: Low risk, small amount -> ALLOW
     request = {
         "schema_version": "decision_request.v1",

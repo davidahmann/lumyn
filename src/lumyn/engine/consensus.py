@@ -17,6 +17,7 @@ class ConsensusResult:
     confidence: float
     memory_hits: list[MemoryHit]
 
+
 def get_first_reason(result: EvaluationResultV1) -> str:
     return result.reason_codes[0] if result.reason_codes else "unknown"
 
