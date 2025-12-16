@@ -4,6 +4,8 @@
 
 Lumyn is a deterministic `decide()` gateway for AI agents. It enforces strict policies, returns explicit verdicts (`ALLOW`, `DENY`, `ESCALATE`, `ABSTAIN`), and writes durable **Decision Records** for instant incident replay.
 
+With **Lumyn Memory**, it learns from verified outcomes to block repeated failures ("Pre-Cognition") and fast-track proven successes ("Self-Healing").
+
 > [!NOTE]
 > **v1.0.0 Stable**: This documentation covers the v1 engine. For legacy v0 documentation, see [Legacy Specs](SPECS_SCHEMAS.md#legacy-specs-v0).
 
@@ -113,7 +115,11 @@ Fastest "aha" (compounding in seconds):
 - `lumyn demo --story`
 
 Common CLI workflows:
-- `lumyn init` (creates local SQLite + starter- **Policy-as-Code** (YAML + Jinja2)
+- `lumyn init` (creates local SQLite + starter policy)
+- `lumyn monitor` (watch decisions live)
+
+Key capabilities:
+- **Policy-as-Code** (YAML + Jinja2)
 - **Institutional Memory** (Learn from outcomes)
 - **GitOps-native** workflow
 - **Local & Fast** (Rust-powered internals, Python interface)
@@ -196,6 +202,7 @@ Endpoints:
 
 - [Feature Overview & Quickstart](docs/quickstart.md)
 - [v1 Semantics Reference](docs/v1_semantics.md)
+- [Lumyn Memory & Learning](docs/memory.md)
 - [Architecture](docs/architecture.md)
 - [Specs & Schemas](SPECS_SCHEMAS.md)
 - [Integration Checklist](docs/integration_checklist.md)
