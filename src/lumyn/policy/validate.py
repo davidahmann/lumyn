@@ -179,13 +179,10 @@ def validate_policy_v1(
 ) -> PolicyValidationResult:
     errors: list[str] = []
 
-
-
     if policy_schema:
         validator = Draft202012Validator(policy_schema)
         for err in sorted(validator.iter_errors(policy), key=str):
             errors.append(err.message)
-
 
     # v1 Reason codes: Is there a controlled vocabulary?
     # Spec says: "Reason codes are strings." No strict enum enforcement in v1.0.0 (open world).

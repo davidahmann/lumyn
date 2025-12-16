@@ -20,7 +20,6 @@ class MemoryStore:
         # Ensure table exists
         self.table_name = "experiences"
 
-
     def add_experiences(self, experiences: Sequence[Experience]) -> None:
         if not experiences:
             return
