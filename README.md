@@ -113,10 +113,29 @@ Fastest "aha" (compounding in seconds):
 - `lumyn demo --story`
 
 Common CLI workflows:
-- `lumyn init` (creates local SQLite + starter `policy.v1`)
-- `lumyn demo` (emits a few real-looking Decision Records as JSON)
-- `lumyn demo --story` (auto-label a failure and show compounding)
-- `lumyn decide req.json` (prints a Decision Record)
+- `lumyn init` (creates local SQLite + starter- **Policy-as-Code** (YAML + Jinja2)
+- **Institutional Memory** (Learn from outcomes)
+- **GitOps-native** workflow
+- **Local & Fast** (Rust-powered internals, Python interface)
+
+## Quickstart
+
+### 1. Initialize
+```bash
+uv tool install lumyn
+lumyn init
+```
+
+### 2. Make a Decision
+```bash
+lumyn decide request.json
+```
+
+### 3. Teach (Optional)
+```bash
+# If a decision turns out to be bad (e.g. fraud), teach Lumyn:
+lumyn learn <decision_id> --outcome FAILURE
+``` (prints a Decision Record)
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`
 - `lumyn export <decision_id> --pack --out decision_pack.zip`
 - `lumyn replay decision_pack.zip` (validate pack + digests)
