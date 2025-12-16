@@ -2,18 +2,21 @@ from __future__ import annotations
 
 import copy
 import sqlite3
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
 
 from jsonschema import Draft202012Validator
 
+from lumyn.engine.consensus import ConsensusEngine
 from lumyn.engine.evaluator import EvaluationResult, evaluate_policy
 from lumyn.engine.evaluator_v1 import EvaluationResultV1, evaluate_policy_v1
 from lumyn.engine.normalize import normalize_request
 from lumyn.engine.normalize_v1 import compute_inputs_digest_v1, normalize_request_v1
 from lumyn.engine.redaction import redact_request_for_persistence
 from lumyn.engine.similarity import top_k_matches
+from lumyn.memory.client import MemoryStore
+from lumyn.memory.embed import ProjectionLayer
 from lumyn.policy.loader import LoadedPolicy, load_policy, read_policy_text
 from lumyn.records.emit import RiskSignals, build_decision_record, compute_inputs_digest
 from lumyn.records.emit_v1 import RiskSignalsV1, build_decision_record_v1
@@ -31,6 +34,8 @@ class LumynConfig:
     top_k: int = 5
     mode: str | None = None
     redaction_profile: str = "default"
+    memory_enabled: bool = True
+    memory_path: str | Path = ".lumyn/memory"
 
 
 def _validate_request_or_raise(request: dict[str, Any]) -> None:
@@ -410,65 +415,54 @@ def decide_v1(
                     log_decision_record(existing)
                     return existing
 
-        # Experience memory similarity (MVP): compare feature dicts.
-        # Logic is similar but uses v1 normalized features
-        query_feature = {
-            "action_type": normalized.action_type,
-            "amount_currency": normalized.amount_currency,
-            "amount_usd_bucket": (
-                None
-                if normalized.amount_usd is None
-                else (
-                    "small"
-                    if normalized.amount_usd < 50
-                    else "medium"
-                    if normalized.amount_usd < 200
-                    else "large"
-                )
-            ),
-            # v1 request structure for tags remains same in action.tags
-            "tags": (
-                request_eval.get("action", {})
-                if isinstance(request_eval.get("action"), dict)
-                else {}
-            ).get("tags", []),
-        }
+        # Experience memory similarity (BEM Integration)
+        failure_similarity_score = 0.0
+        memory_hits = []
 
-        memory_items = store_impl.list_memory_items(
-            tenant_id=tenant_id, action_type=normalized.action_type, limit=500
-        )
-        candidates: list[dict[str, Any]] = []
-        for item in memory_items:
-            candidates.append(
-                {
-                    "memory_id": item.memory_id,
-                    "label": item.label,
-                    "feature": item.feature,
-                    "summary": item.summary,
-                }
-            )
+        if cfg.memory_enabled:
+            # 1. Project
+            proj = ProjectionLayer()
+            vector = proj.embed_request(normalized)
 
-        matches = top_k_matches(query_feature=query_feature, candidates=candidates, top_k=cfg.top_k)
-        failure_matches = [m for m in matches if m.label == "failure"]
-        failure_similarity_score = failure_matches[0].score if failure_matches else 0.0
+            # 2. Search
+            mem_store = MemoryStore(db_path=cfg.memory_path)
+            memory_hits = mem_store.search(vector, limit=cfg.top_k)
 
-        evidence_obj = request_eval.get("evidence")
-        evidence: dict[str, Any]
-        if isinstance(evidence_obj, dict):
-            evidence = evidence_obj
-        else:
-            evidence = {}
-            request_eval["evidence"] = evidence
-        evidence["failure_similarity_score"] = float(failure_similarity_score)
+            # 3. Arbitrate (Consensus Engine)
+            # Eval happens first? Yes, eval provides Heuristic input.
 
         evaluation = evaluate_policy_v1(request_eval, policy=policy)
 
-        # Uncertainty MVP (v1):
         uncertainty = 0.2
+        if cfg.memory_enabled:
+            # Calculate Risk Signal for metadata
+            for h in memory_hits:
+                if h.experience.outcome == -1 and h.score > failure_similarity_score:
+                    failure_similarity_score = h.score
+
+            ce = ConsensusEngine()
+            consensus = ce.arbitrate(evaluation, memory_hits)
+
+            # Update Verdict if Consensus changed it
+            if consensus.verdict != evaluation.verdict:
+                new_reasons = list(evaluation.reason_codes)
+                if consensus.reason:
+                    new_reasons.append(consensus.reason)
+
+                evaluation = replace(
+                    evaluation, verdict=consensus.verdict, reason_codes=new_reasons
+                )
+
+            # Update uncertainty based on risk
+            if failure_similarity_score >= 0.35:
+                uncertainty += 0.3
+            if consensus.source.startswith("memory"):
+                # If memory intervened, current uncertainty logic might need adjustment
+                pass
+
+        # Legacy logic for uncertainty fallback
         if evaluation.verdict == "DENY":  # v1 equivalent of QUERY? Or just DENY?
             uncertainty += 0.2
-        if failure_similarity_score >= 0.35:
-            uncertainty += 0.3
         uncertainty = min(1.0, max(0.0, uncertainty))
 
         request_for_record = copy.deepcopy(request_eval)
@@ -487,12 +481,13 @@ def decide_v1(
                 failure_similarity_score=failure_similarity_score,
                 failure_similarity_top_k=[
                     {
-                        "memory_id": m.memory_id,
-                        "label": m.label,
-                        "score": m.score,
-                        "summary": m.summary,
+                        "id": h.experience.decision_id,
+                        "label": "failure",
+                        "score": h.score,
+                        "summary": f"Similarity {h.score:.2f}",
                     }
-                    for m in matches
+                    for h in memory_hits
+                    if h.experience.outcome == -1
                 ],
             ),
             engine_version=__version__,
