@@ -19,12 +19,7 @@ class MemoryStore:
 
         # Ensure table exists
         self.table_name = "experiences"
-        if self.table_name not in self.db.table_names():
-            # Create with a dummy record or schema?
-            # LanceDB prefers schema or data. Let's lazily create on first write?
-            # Or create empty table with schema.
-            # For simplicity in v1.3, we'll handle creation in `add_experiences`.
-            pass
+
 
     def add_experiences(self, experiences: Sequence[Experience]) -> None:
         if not experiences:

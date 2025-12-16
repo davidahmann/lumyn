@@ -29,9 +29,7 @@ def migrate_policy_v0_to_v1(policy_v0: dict[str, Any]) -> tuple[dict[str, Any], 
     policy_v1 = {
         "schema_version": "policy.v1",
         "policy_id": policy_v0.get("policy_id", "unknown"),
-        "policy_version": "1.0.0",  # Bump version? Or keep same? Let's bump major.
-        # Actually better to keep if possible, but v0->v1 is major.
-        # Ideally user bumps. We'll set a placeholder.
+        "policy_version": "1.0.0",  # Default for migrated policies.
     }
 
     # 2. Defaults

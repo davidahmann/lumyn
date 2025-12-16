@@ -179,17 +179,13 @@ def validate_policy_v1(
 ) -> PolicyValidationResult:
     errors: list[str] = []
 
-    # Schema loading logic placeholder
-    pass
+
 
     if policy_schema:
         validator = Draft202012Validator(policy_schema)
         for err in sorted(validator.iter_errors(policy), key=str):
             errors.append(err.message)
-    else:
-        # Fallback load? Or assume caller handles schema validation?
-        # Let's stick to logic validation for now and assume schema passed.
-        pass
+
 
     # v1 Reason codes: Is there a controlled vocabulary?
     # Spec says: "Reason codes are strings." No strict enum enforcement in v1.0.0 (open world).

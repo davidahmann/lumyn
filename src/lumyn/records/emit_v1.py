@@ -100,9 +100,8 @@ def build_decision_record_v1(
                 "ALLOW_PATHS",
                 "DEFAULT",
             ],
-            # v1 might change this list in Epic V1-2B, for now use v0/placeholder list.
-            # But wait, v1 uses ALLOW/DENY. The stages names might remain same or change.
-            # I will keep them same for now as per plan "Finalize policy.v1 spec" is next task.
+            # v1 Determinism: inputs_digest allows verifying the state of the world
+            # (policy + request) at decision time.
             "inputs_digest": inputs_digest,
         },
         "extensions": {},
