@@ -1,6 +1,5 @@
 """Test lumyn policy validate command."""
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 import typer
