@@ -1,4 +1,5 @@
 """Test lumyn policy validate command."""
+
 from pathlib import Path
 
 import pytest
@@ -30,7 +31,7 @@ rules:
     (workspace / "policy.yml").write_text(policy_content)
 
     validate(workspace=workspace, path=None)
-    
+
     captured = capsys.readouterr()
     assert "ok" in captured.out
     assert "test-policy" in captured.out
@@ -57,7 +58,7 @@ rules:
     policy_path.write_text(policy_content)
 
     validate(workspace=Path(".lumyn"), path=policy_path)
-    
+
     captured = capsys.readouterr()
     assert "custom-policy" in captured.out
 
@@ -69,5 +70,5 @@ def test_policy_validate_missing_file(tmp_path: Path) -> None:
 
     with pytest.raises(typer.Exit) as exc_info:
         validate(workspace=workspace, path=None)
-    
+
     assert exc_info.value.exit_code == 1
