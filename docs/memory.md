@@ -42,3 +42,27 @@ Decisions influenced by Memory will have specific reason codes:
 - `High similarity (0.98) to approved pattern <id>`
 
 And the `risk_signals` block in the decision record will contain `failure_similarity` scores.
+
+## Uncertainty Score
+
+The `risk_signals.uncertainty_score` field indicates how novel a request pattern is:
+
+- **Low uncertainty (< 0.3)**: Lumyn has seen many similar patterns before. High confidence in the verdict.
+- **High uncertainty (> 0.7)**: This is a novel pattern with little or no historical precedent. Consider escalating for human review.
+
+**Formula**: `uncertainty = 1.0 - max(success_similarity, failure_similarity)`
+
+This means:
+- If a request closely matches known successes or failures, uncertainty is low.
+- If a request matches nothing in memory, uncertainty approaches 1.0.
+
+Use this in your escalation logic:
+```yaml
+# Escalate novel patterns to human review
+- id: R099
+  stage: ESCALATIONS
+  if: { evidence.uncertainty_score_gte: 0.7 }
+  then:
+    verdict: ESCALATE
+    reason_codes: [NOVEL_PATTERN_REVIEW]
+```

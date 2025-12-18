@@ -14,7 +14,8 @@ class ConsensusResult:
     verdict: str
     source: str  # "heuristic" | "memory_risk" | "memory_success"
     reason: str
-    confidence: float
+    confidence: float  # How confident we are in the verdict (0.0 - 1.0)
+    uncertainty: float  # 1.0 - strongest memory signal; high = novel pattern
     memory_hits: list[MemoryHit]
 
 
@@ -54,12 +55,18 @@ class ConsensusEngine:
         h_verdict = heuristic_result.verdict
 
         # 1. Heuristic Priority (Hard Constraints)
+        # For hard denials, rules are definitive regardless of memory
         if h_verdict in ("DENY", "ABSTAIN"):
+            # Even for hard rules, compute memory signal for uncertainty
+            strongest_signal = 0.0
+            for hit in memory_hits:
+                strongest_signal = max(strongest_signal, hit.score)
             return ConsensusResult(
                 verdict=h_verdict,
                 source="heuristic",
                 reason=f"Heuristic rule: {get_first_reason(heuristic_result)}",
-                confidence=1.0,
+                confidence=1.0,  # Rules are always confident
+                uncertainty=1.0 - strongest_signal,  # Novel if no memory
                 memory_hits=memory_hits,
             )
 
@@ -96,6 +103,7 @@ class ConsensusEngine:
                 source="memory_risk",
                 reason=reason_code,
                 confidence=risk_score,
+                uncertainty=1.0 - risk_score,  # Low uncertainty - we have evidence
                 memory_hits=memory_hits,
             )
 
@@ -117,14 +125,18 @@ class ConsensusEngine:
                 source="memory_success",
                 reason=reason_code,
                 confidence=success_score,
+                uncertainty=1.0 - success_score,  # Low uncertainty - we have evidence
                 memory_hits=memory_hits,
             )
 
         # Default: Trust Heuristic
+        # Uncertainty is high if no strong memory signal exists
+        strongest_signal = max(risk_score, success_score)
         return ConsensusResult(
             verdict=h_verdict,
             source="heuristic",
             reason="No strong memory signal to override",
-            confidence=0.5,
+            confidence=0.5 + (strongest_signal * 0.5),  # Modest boost from weak signals
+            uncertainty=1.0 - strongest_signal,  # High if novel pattern
             memory_hits=memory_hits,
         )

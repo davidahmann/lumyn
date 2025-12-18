@@ -453,16 +453,15 @@ def decide_v1(
                     evaluation, verdict=consensus.verdict, reason_codes=new_reasons
                 )
 
-            # Update uncertainty based on risk
-            if failure_similarity_score >= 0.35:
-                uncertainty += 0.3
-            if consensus.source.startswith("memory"):
-                # If memory intervened, current uncertainty logic might need adjustment
-                pass
+            # Use uncertainty from Consensus Engine (driven by memory signals)
+            uncertainty = consensus.uncertainty
 
-        # Legacy logic for uncertainty fallback
-        if evaluation.verdict == "DENY":  # v1 equivalent of QUERY? Or just DENY?
-            uncertainty += 0.2
+        # Legacy fallback for non-memory path
+        if not cfg.memory_enabled:
+            if evaluation.verdict == "DENY":
+                uncertainty = 0.4  # Moderate uncertainty without memory context
+            else:
+                uncertainty = 0.5  # Default: no memory = no context = uncertain
         uncertainty = min(1.0, max(0.0, uncertainty))
 
         request_for_record = copy.deepcopy(request_eval)
