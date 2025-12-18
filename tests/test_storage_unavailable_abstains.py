@@ -63,4 +63,3 @@ def test_decide_v1_abstains_if_storage_unavailable(tmp_path: Path) -> None:
     record = decide_v1(request, config=cfg, store=store)
     assert record["verdict"] == "ABSTAIN"
     assert "STORAGE_UNAVAILABLE" in record["reason_codes"]
-
