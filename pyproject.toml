@@ -51,6 +51,7 @@ dev = [
   "ruff>=0.6",
   "types-PyYAML>=6.0.12.20240808",
   "uvicorn>=0.30",
+  "pytest-cov>=7.0.0",
 ]
 
 [tool.ruff]
