@@ -87,7 +87,11 @@ def main(
             workspace=workspace, policy_template=DEFAULT_POLICY_TEMPLATE, force=False
         )
 
-    cfg = LumynConfig(policy_path=paths.policy_path, store_path=paths.db_path)
+    cfg = LumynConfig(
+        policy_path=paths.policy_path,
+        store_path=paths.db_path,
+        memory_path=paths.workspace / "memory",
+    )
     if story:
         req1 = copy.deepcopy(_demo_requests()[0])
         action_obj = req1.get("action")

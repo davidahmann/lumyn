@@ -119,10 +119,10 @@ Common CLI workflows:
 - `lumyn monitor` (watch decisions live)
 
 Key capabilities:
-- **Policy-as-Code** (YAML + Jinja2)
+- **Policy-as-Code** (YAML)
 - **Institutional Memory** (Learn from outcomes)
 - **GitOps-native** workflow
-- **Local & Fast** (Rust-powered internals, Python interface)
+- **Local & Fast** (SQLite + deterministic engine)
 
 ## Quickstart
 
@@ -141,7 +141,7 @@ lumyn decide request.json
 ```bash
 # If a decision turns out to be bad (e.g. fraud), teach Lumyn:
 lumyn learn <decision_id> --outcome FAILURE
-``` (prints a Decision Record)
+```
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`
 - `lumyn export <decision_id> --pack --out decision_pack.zip`
 - `lumyn replay decision_pack.zip` (validate pack + digests)
@@ -155,7 +155,10 @@ Lumyn does not call your model. You call Lumyn before (or around) a real write-p
 ```python
 from lumyn import LumynConfig, decide_v1
 
-cfg = LumynConfig(store_path=".lumyn/lumyn.db")  # loads policies/starter.v1.yml
+cfg = LumynConfig(
+    policy_path="policies/starter.v1.yml",  # built-in starter policy (v1)
+    store_path=".lumyn/lumyn.db",
+)
 
 record = decide_v1(
     {
@@ -169,9 +172,17 @@ record = decide_v1(
         },
         "evidence": {
             "ticket_id": "ZD-1001",
+            "order_id": "82731",
+            "customer_id": "C-9",
             "payment_instrument_risk": "low",
+            "chargeback_risk": 0.05,
+            "previous_refund_count_90d": 0,
+            "customer_age_days": 180,
         },
-        "context": {"mode": "digest_only", "digest": "sha256:..."}
+        "context": {
+            "mode": "digest_only",
+            "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        }
     },
     config=cfg,
 )

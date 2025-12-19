@@ -92,7 +92,7 @@ def test_precognition_flow() -> None:
     decision2 = decide(req2, config=config)
 
     assert decision2["verdict"] == "ABSTAIN"
-    assert "High similarity" in str(decision2["reason_codes"])
+    assert "FAILURE_MEMORY_SIMILAR_BLOCK" in decision2["reason_codes"]
 
     # Check risk signals
     assert decision2["risk_signals"]["failure_similarity"]["score"] > 0.99

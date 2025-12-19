@@ -8,6 +8,9 @@ from lumyn.memory.types import MemoryHit
 
 logger = logging.getLogger(__name__)
 
+REASON_FAILURE_MEMORY_SIMILAR_BLOCK = "FAILURE_MEMORY_SIMILAR_BLOCK"
+REASON_SUCCESS_MEMORY_SIMILAR_ALLOW = "SUCCESS_MEMORY_SIMILAR_ALLOW"
+
 
 @dataclass(frozen=True, slots=True)
 class ConsensusResult:
@@ -75,28 +78,19 @@ class ConsensusEngine:
         risk_score = 0.0
         success_score = 0.0
 
-        top_failure = None
-        top_success = None
-
         for hit in memory_hits:
             # Simple aggregation for v1.3: Max similarity wins
             if hit.experience.outcome == -1:  # Failure
-                if hit.score > risk_score:
-                    risk_score = hit.score
-                    top_failure = hit
+                risk_score = max(risk_score, hit.score)
             elif hit.experience.outcome == 1:  # Success
-                if hit.score > success_score:
-                    success_score = hit.score
-                    top_success = hit
+                success_score = max(success_score, hit.score)
 
         # 2. Risk Intervention (Pattern Matching to Failure)
         # If Heuristic allows, but we see a strong failure pattern
         if h_verdict == "ALLOW" and risk_score > risk_threshold:
             # "Pre-Cognition": Block it.
             verdict = "ABSTAIN"
-            reason_code = f"High similarity ({risk_score:.2f}) to an unknown failure pattern"
-            if top_failure:
-                reason_code = f"High similarity ({risk_score:.2f}) to failure pattern {top_failure.experience.decision_id}"  # noqa: E501
+            reason_code = REASON_FAILURE_MEMORY_SIMILAR_BLOCK
 
             return ConsensusResult(
                 verdict=verdict,  # Safe default
@@ -110,15 +104,9 @@ class ConsensusEngine:
         # 3. SELF-HEALING: Check for success similarity
         # If Heuristic says ESCALATE/DENY but Memory says "This looks like a known good pattern"
 
-        # Simple top-1 check for now
-        top_success = next((h for h in memory_hits if h.experience.outcome == 1), None)
-        success_score = top_success.score if top_success else 0.0
-
         if success_score >= 0.98:
             verdict = "ALLOW"
-            reason_code = "High similarity to approved pattern"
-            if top_success:
-                reason_code = f"High similarity ({success_score:.2f}) to approved pattern {top_success.experience.decision_id}"  # noqa: E501
+            reason_code = REASON_SUCCESS_MEMORY_SIMILAR_ALLOW
 
             return ConsensusResult(
                 verdict=verdict,

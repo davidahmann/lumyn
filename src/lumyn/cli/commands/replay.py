@@ -11,6 +11,7 @@ from jsonschema import Draft202012Validator
 
 from lumyn.cli.markdown import render_ticket_summary_markdown
 from lumyn.engine.normalize import normalize_request
+from lumyn.engine.normalize_v1 import compute_inputs_digest_v1, normalize_request_v1
 from lumyn.policy.loader import compute_policy_hash
 from lumyn.policy.validate import validate_policy_or_raise
 from lumyn.records.emit import compute_inputs_digest
@@ -48,12 +49,12 @@ def _zip_read_text(zf: zipfile.ZipFile, name: str) -> str:
         die(f"missing {name} in pack")
 
 
-def _decision_request_for_inputs_digest(request: dict[str, Any]) -> dict[str, Any]:
+def _decision_request_v0_equivalent(request: dict[str, Any]) -> dict[str, Any]:
     """
-    v1 preview compatibility:
-    - `determinism.inputs_digest` is computed by the v0 engine.
-    - Converting a pack to v1 changes only `schema_version`.
-    - For replay, compute the digest over the v0-equivalent request.
+    Convert a v1 request into a v0-equivalent shape for legacy digest verification.
+
+    This is needed because `lumyn convert --to v1` upgrades schema_version fields but does
+    not recompute determinism digests (it keeps the original v0 digest).
     """
     schema_version = request.get("schema_version")
     if schema_version == "decision_request.v1":
@@ -134,19 +135,46 @@ def main(
     if expected_hash != policy_hash:
         die(f"policy_hash mismatch: record={expected_hash} computed={policy_hash}")
 
-    digest_request = _decision_request_for_inputs_digest(request)
-    normalized = normalize_request(digest_request)
-    computed_inputs_digest = compute_inputs_digest(digest_request, normalized=normalized)
     raw_determinism = record.get("determinism")
     determinism: dict[str, Any]
     if isinstance(raw_determinism, dict):
         determinism = raw_determinism
     else:
         determinism = {}
-    if determinism.get("inputs_digest") != computed_inputs_digest:
+
+    expected_inputs_digest = determinism.get("inputs_digest")
+
+    # Compute candidate digests:
+    # - v1-native digest (for records produced by the v1 engine)
+    # - v0 digest (for v0 records, and for v0→v1 converted packs where digests weren't recomputed)
+    computed_v1: str | None = None
+    if request_schema_version == "decision_request.v1":
+        normalized_v1 = normalize_request_v1(request)
+        computed_v1 = compute_inputs_digest_v1(request, normalized=normalized_v1)
+
+    digest_request_v0 = _decision_request_v0_equivalent(request)
+    normalized_v0 = normalize_request(digest_request_v0)
+    computed_v0 = compute_inputs_digest(digest_request_v0, normalized=normalized_v0)
+
+    matched_inputs_digest: str
+    if record_schema_version == "decision_record.v0":
+        matched_inputs_digest = computed_v0
+    elif record_schema_version == "decision_record.v1":
+        if computed_v1 is not None and expected_inputs_digest == computed_v1:
+            matched_inputs_digest = computed_v1
+        else:
+            matched_inputs_digest = computed_v0
+    else:
+        # Unknown version: fall back to the legacy digest algorithm for safety.
+        matched_inputs_digest = computed_v0
+    if expected_inputs_digest != matched_inputs_digest:
+        computed_parts = []
+        if computed_v1 is not None:
+            computed_parts.append(f"v1={computed_v1}")
+        computed_parts.append(f"v0={computed_v0}")
         die(
             "inputs_digest mismatch: "
-            f"record={determinism.get('inputs_digest')} computed={computed_inputs_digest}"
+            f"record={expected_inputs_digest} computed=({', '.join(computed_parts)})"
         )
 
     decision_id = record.get("decision_id")
@@ -181,7 +209,7 @@ def main(
                 reason_codes=[str(x) for x in reason_codes],
                 policy_hash=policy_hash,
                 context_digest=str(context.get("digest")) if context.get("digest") else None,
-                inputs_digest=computed_inputs_digest,
+                inputs_digest=matched_inputs_digest,
                 matched_rules=[
                     r for r in (record.get("matched_rules") or []) if isinstance(r, dict)
                 ]
@@ -196,6 +224,6 @@ def main(
         typer.echo(f"verdict: {verdict}")
         typer.echo(f"policy_hash: {policy_hash}")
         typer.echo(f"context_digest: {context.get('digest')}")
-        typer.echo(f"inputs_digest: {computed_inputs_digest}")
+        typer.echo(f"inputs_digest: {matched_inputs_digest}")
         if obligations:
             typer.echo(f"obligations: {len(obligations)}")

@@ -94,6 +94,8 @@ def _abstain_storage_unavailable_record_v1(
             uncertainty_score=1.0,
             failure_similarity_score=0.0,
             failure_similarity_top_k=[],
+            success_similarity_score=0.0,
+            success_similarity_top_k=[],
         ),
         engine_version=__version__,
     )
@@ -417,6 +419,7 @@ def decide_v1(
 
         # Experience memory similarity (BEM Integration)
         failure_similarity_score = 0.0
+        success_similarity_score = 0.0
         memory_hits = []
 
         if cfg.memory_enabled:
@@ -439,6 +442,8 @@ def decide_v1(
             for h in memory_hits:
                 if h.experience.outcome == -1 and h.score > failure_similarity_score:
                     failure_similarity_score = h.score
+                if h.experience.outcome == 1 and h.score > success_similarity_score:
+                    success_similarity_score = h.score
 
             ce = ConsensusEngine()
             consensus = ce.arbitrate(evaluation, memory_hits)
@@ -487,6 +492,17 @@ def decide_v1(
                     }
                     for h in memory_hits
                     if h.experience.outcome == -1
+                ],
+                success_similarity_score=success_similarity_score,
+                success_similarity_top_k=[
+                    {
+                        "id": h.experience.decision_id,
+                        "label": "success",
+                        "score": h.score,
+                        "summary": f"Similarity {h.score:.2f}",
+                    }
+                    for h in memory_hits
+                    if h.experience.outcome == 1
                 ],
             ),
             engine_version=__version__,

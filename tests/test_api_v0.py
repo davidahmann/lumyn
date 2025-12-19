@@ -79,6 +79,13 @@ def test_api_v1_decide_returns_v1_record(tmp_path: Path) -> None:
     assert record["request"]["schema_version"] == "decision_request.v1"
     assert record["verdict"] in {"ALLOW", "DENY", "ABSTAIN", "ESCALATE"}
 
+    decision_id = record["decision_id"]
+    got = client.get(f"/v1/decisions/{decision_id}")
+    assert got.status_code == 200
+    fetched = got.json()
+    assert fetched["schema_version"] == "decision_record.v1"
+    assert fetched["decision_id"] == decision_id
+
 
 def test_api_events_endpoint(tmp_path: Path) -> None:
     store_path = tmp_path / "lumyn.db"
@@ -113,6 +120,19 @@ def test_api_policy_endpoint(tmp_path: Path) -> None:
     client = TestClient(app)
 
     resp = client.get("/v0/policy")
+    assert resp.status_code == 200, resp.text
+    payload = resp.json()
+    assert payload["policy_id"] == "lumyn-support"
+    assert payload["policy_version"] == "0.1.0"
+    assert payload["policy_hash"].startswith("sha256:")
+
+
+def test_api_v1_policy_endpoint(tmp_path: Path) -> None:
+    store_path = tmp_path / "lumyn.db"
+    app = create_app(settings=_settings(store_path=store_path))
+    client = TestClient(app)
+
+    resp = client.get("/v1/policy")
     assert resp.status_code == 200, resp.text
     payload = resp.json()
     assert payload["policy_id"] == "lumyn-support"

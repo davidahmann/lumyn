@@ -37,11 +37,13 @@ lumyn learn <decision_id> --outcome SUCCESS
 ```
 
 ### Monitoring Memory
-Decisions influenced by Memory will have specific reason codes:
-- `High similarity (0.95) to failure pattern <id>`
-- `High similarity (0.98) to approved pattern <id>`
+Decisions overridden by Memory include stable reason codes:
+- `FAILURE_MEMORY_SIMILAR_BLOCK` (Memory blocks an otherwise-`ALLOW`)
+- `SUCCESS_MEMORY_SIMILAR_ALLOW` (Memory allows an otherwise-`ESCALATE`)
 
-And the `risk_signals` block in the decision record will contain `failure_similarity` scores.
+Dynamic evidence (scores and top matches) lives under:
+- `risk_signals.failure_similarity`
+- `risk_signals.success_similarity`
 
 ## Uncertainty Score
 
@@ -57,12 +59,5 @@ This means:
 - If a request matches nothing in memory, uncertainty approaches 1.0.
 
 Use this in your escalation logic:
-```yaml
-# Escalate novel patterns to human review
-- id: R099
-  stage: ESCALATIONS
-  if: { evidence.uncertainty_score_gte: 0.7 }
-  then:
-    verdict: ESCALATE
-    reason_codes: [NOVEL_PATTERN_REVIEW]
-```
+Use `risk_signals.uncertainty_score` in your application routing (outside of policy evaluation) to
+decide whether to send a decision to human review.

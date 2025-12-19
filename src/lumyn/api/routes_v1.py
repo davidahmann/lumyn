@@ -9,6 +9,8 @@ from jsonschema.exceptions import ValidationError
 
 from lumyn.api.auth import require_hmac_signature
 from lumyn.core.decide import LumynConfig, decide_v1
+from lumyn.migrate.v0_v1 import decision_record_v0_to_v1
+from lumyn.policy.loader import load_policy
 from lumyn.schemas.loaders import load_json_schema
 from lumyn.store.sqlite import SqliteStore
 from lumyn.telemetry.tracing import start_span
@@ -56,5 +58,27 @@ def build_routes_v1(*, deps: ApiV1Deps) -> APIRouter:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
                 ) from e
+
+    @router.get("/v1/decisions/{decision_id}")
+    def get_decision(decision_id: str) -> dict[str, Any]:
+        with start_span("http.get /v1/decisions/{decision_id}"):
+            deps.store.init()
+            record = deps.store.get_decision_record(decision_id)
+            if record is None:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="not found")
+
+            if record.get("schema_version") == "decision_record.v0":
+                return decision_record_v0_to_v1(record)
+            return record
+
+    @router.get("/v1/policy")
+    def get_policy() -> dict[str, Any]:
+        with start_span("http.get /v1/policy"):
+            loaded = load_policy(deps.config.policy_path)
+            return {
+                "policy_id": loaded.policy["policy_id"],
+                "policy_version": loaded.policy["policy_version"],
+                "policy_hash": loaded.policy_hash,
+            }
 
     return router

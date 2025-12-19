@@ -33,6 +33,8 @@ class RiskSignalsV1:
     uncertainty_score: float
     failure_similarity_score: float
     failure_similarity_top_k: list[dict[str, Any]]
+    success_similarity_score: float
+    success_similarity_top_k: list[dict[str, Any]]
 
 
 def _utc_now_iso() -> str:
@@ -87,6 +89,10 @@ def build_decision_record_v1(
             "failure_similarity": {
                 "score": risk_signals.failure_similarity_score,
                 "top_k": risk_signals.failure_similarity_top_k,
+            },
+            "success_similarity": {
+                "score": risk_signals.success_similarity_score,
+                "top_k": risk_signals.success_similarity_top_k,
             },
         },
         "queries": evaluation.queries,

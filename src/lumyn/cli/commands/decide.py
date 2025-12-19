@@ -34,6 +34,10 @@ def main(
         )
 
     request = read_json_from_path_or_stdin(input_path)
-    cfg = LumynConfig(policy_path=paths.policy_path, store_path=paths.db_path)
+    cfg = LumynConfig(
+        policy_path=paths.policy_path,
+        store_path=paths.db_path,
+        memory_path=paths.workspace / "memory",
+    )
     record = decide(request, config=cfg)
     write_json_to_path_or_stdout(record, path=out, pretty=pretty)

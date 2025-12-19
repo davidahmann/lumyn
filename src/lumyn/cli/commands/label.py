@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import typer
 
 from lumyn.engine.normalize import normalize_request
+from lumyn.engine.normalize_v1 import normalize_request_v1
+from lumyn.memory.client import MemoryStore
+from lumyn.memory.embed import ProjectionLayer
+from lumyn.memory.types import Experience, Verdict
 from lumyn.store.sqlite import SqliteStore
 
 from ..util import die, resolve_workspace_paths
@@ -109,6 +113,39 @@ def main(
         summary=summary,
         source_decision_id=decision_id,
     )
+
+    # v1 Memory (LanceDB): also ingest "failure"/"success" labels as experiences.
+    # This ensures `lumyn demo --story` and `lumyn label --label failure` produce the intended
+    # compounding behavior in the v1 engine.
+    schema_version = record.get("schema_version")
+    if schema_version == "decision_record.v1" and label_norm in {"failure", "success"}:
+        request = record.get("request")
+        if not isinstance(request, dict):
+            die("decision record missing request object")
+
+        normalized_v1 = normalize_request_v1(request)
+        vector = ProjectionLayer().embed_request(normalized_v1)
+
+        verdict_raw = record.get("verdict")
+        original_verdict: Verdict
+        if verdict_raw in {"ALLOW", "DENY", "ABSTAIN", "ESCALATE"}:
+            original_verdict = cast(Verdict, verdict_raw)
+        else:
+            original_verdict = "ESCALATE"
+
+        created_at = record.get("created_at")
+        timestamp = created_at if isinstance(created_at, str) else ""
+
+        outcome_val = 1 if label_norm == "success" else -1
+        exp = Experience(
+            decision_id=decision_id,
+            vector=vector,
+            outcome=outcome_val,
+            original_verdict=original_verdict,
+            timestamp=timestamp,
+        )
+        mem_store = MemoryStore(db_path=paths.workspace / "memory")
+        mem_store.add_experiences([exp])
 
     typer.echo(f"event_id: {event_id}")
     typer.echo(f"memory_id: {memory.memory_id}")

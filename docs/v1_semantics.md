@@ -71,14 +71,8 @@ Evidence keys operate on the `evidence` dictionary in the request. The operator 
 
 ## Inputs Digest (v1)
 
-The `inputs_digest` (`determinism.inputs_digest`) is a SHA-256 hash of the normalized request.
-v1 Normalization includes:
-- `policy.policy_id` + `policy.policy_version`
-- `request.action.type`
-- `request.action.intent`
-- `request.action.amount.value` + `currency`
-- `request.evidence` (Sorted keys)
+The `inputs_digest` (`determinism.inputs_digest`) is a SHA-256 hash of a canonical JSON payload
+containing the request and derived evaluation features (e.g. `amount_usd`).
 
-It explicitly **excludes**:
-- `request_id`, `trace_id` (Non-deterministic)
-- `context.mode`
+Treat this value as an opaque, replayable digest that lets you verify “same inputs ⇒ same decision”
+across environments.

@@ -70,7 +70,7 @@ def main(
         raise typer.Exit(2)
 
     # We load config with strict enforcement
-    config = LumynConfig(policy_path=str(policy))
+    config = LumynConfig(policy_path=str(policy), memory_enabled=False)
     # Pre-validate policy load to fail fast
     try:
         loaded_policy = load_policy(policy)

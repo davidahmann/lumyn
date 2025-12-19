@@ -40,9 +40,8 @@ All digests are `sha256:<hex>` computed via JSON Canonicalization Scheme (JCS).
 
 - `policy.policy_hash`: SHA-256 of canonicalized policy JSON.
 - `determinism.inputs_digest`: SHA-256 of canonicalized payload containing:
-    - `policy.policy_id` + `policy.policy_version`
-    - `request.action` (type, intent, amount)
-    - `request.evidence` (sorted keys)
+    - `request` (as persisted in the Decision Record)
+    - `derived` evaluation features (e.g. `amount_usd`, FX presence)
 
 ## Policy (v1) — YAML spec
 

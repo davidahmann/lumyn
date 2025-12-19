@@ -54,6 +54,14 @@
       "description": "Amount not in USD and no fx rate provided; more info required."
     },
     { "code": "CLOSE_TICKET_OK", "description": "Ticket close allowed by policy." },
-    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." }
+    { "code": "UPDATE_TICKET_OK", "description": "Ticket update allowed by policy." },
+    {
+      "code": "FAILURE_MEMORY_SIMILAR_BLOCK",
+      "description": "Similarity to a labeled failure is high; decision blocked."
+    },
+    {
+      "code": "SUCCESS_MEMORY_SIMILAR_ALLOW",
+      "description": "Similarity to a labeled success is high; decision allowed."
+    }
   ]
 }
