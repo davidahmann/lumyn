@@ -15,14 +15,21 @@ const SUPABASE_URL =
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://ycneyxgsifdvkcrveyal.supabase.co';
 
 const POPULAR_QUERIES = [
-  // Core value prop (Decision Records)
+  // Incident Response / SRE Persona
+  { query: 'How do I debug a blocked decision?', href: '/blog/ai-incident-response-replay' },
+  { query: 'Replay a past decision for incident response', href: '/docs/replay-guarantees' },
+
+  // Compliance / Audit Persona
   { query: 'What is a Decision Record?', href: '/blog/what-is-a-decision-record' },
-  { query: 'How to replay an AI decision?', href: '/docs/replay-guarantees' },
+  { query: 'How to prove AI decisions are deterministic?', href: '/docs/replay-guarantees' },
+
+  // Engineering / Integration Persona
+  { query: 'Decision Records vs telemetry logs', href: '/blog/decision-logs-vs-telemetry' },
+  { query: 'Quickstart guide', href: '/docs/quickstart' },
+
+  // AI/ML / Memory Persona
+  { query: 'How does memory labeling work?', href: '/docs/memory' },
   { query: 'What are stable reason codes?', href: '/blog/reason-codes-are-a-contract' },
-  // Getting started
-  { query: 'Quickstart', href: '/docs/quickstart' },
-  { query: 'v0 to v1 migration', href: '/docs/migration_v0_to_v1' },
-  { query: 'Memory (labeling)', href: '/docs/memory' },
 ];
 
 interface SearchModalProps {
