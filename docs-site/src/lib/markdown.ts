@@ -24,6 +24,15 @@ const renderer = new marked.Renderer();
 
 // Override link rendering to handle internal .md links
 renderer.link = function ({ href, title, text }) {
+  // Normalize internal absolute links to respect GitHub Pages basePath.
+  // Next.js `basePath` is only automatically applied when using `next/link`;
+  // our markdown renderer outputs raw `<a>` tags.
+  if (href && href.startsWith('/') && !href.startsWith('//')) {
+    if (basePath && !href.startsWith(basePath + '/')) {
+      href = basePath + href;
+    }
+  }
+
   // Convert internal .md links to proper paths with basePath
   if (href && href.endsWith('.md')) {
     // Remove .md extension
