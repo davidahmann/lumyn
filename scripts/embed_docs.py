@@ -25,8 +25,8 @@ import sys
 from pathlib import Path
 
 DOCS_DIR = Path(__file__).parent.parent / "docs"
-CHUNK_SIZE = 500  # tokens (approximate)
-CHUNK_OVERLAP = 50
+CHUNK_SIZE = 200  # tokens (approximate) - reduced for better granularity
+CHUNK_OVERLAP = 30
 
 
 def _load_local_env_if_present() -> None:
