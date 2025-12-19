@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://davidahmann.github.io/lumyn/</loc><priority>1.0</priority></url>
+
+  <url><loc>https://davidahmann.github.io/lumyn/docs/</loc><priority>1.0</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/quickstart/</loc><priority>0.9</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/v1_semantics/</loc><priority>0.9</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/replay-guarantees/</loc><priority>0.9</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/memory/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/architecture/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/integration_checklist/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/compatibility/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/migration_v0_to_v1/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/docs/deployment/semantic-search-and-pages/</loc><priority>0.7</priority></url>
+
+  <url><loc>https://davidahmann.github.io/lumyn/blog/</loc><priority>0.8</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/ai-incident-response-replay/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/decision-logs-vs-telemetry/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/reason-codes-are-a-contract/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/what-is-a-decision-record/</loc><priority>0.7</priority></url>
+</urlset>

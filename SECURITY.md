@@ -14,3 +14,14 @@ If you cannot use GitHub advisories, open a GitHub issue titled `SECURITY: reque
 ## Supported versions
 
 This project is early-stage OSS. Security fixes are applied to `main` and shipped in the next tagged release.
+
+## Secrets management
+
+Do not commit credentials or API keys to this public repository.
+
+- Local development secrets belong in `.env` files (ignored by git) or your shell environment.
+- GitHub Actions should use repository secrets (Settings → Secrets and variables → Actions).
+- Supabase Edge Functions should use Supabase secrets (Project → Settings → Secrets).
+- Treat `SUPABASE_SERVICE_ROLE_KEY` and `OPENAI_API_KEY` as highly sensitive server-side secrets.
+
+If a secret is accidentally shared or committed, rotate it immediately and assume compromise.

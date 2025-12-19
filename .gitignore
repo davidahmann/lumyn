@@ -27,7 +27,17 @@ htmlcov/
 .ruff_cache/
 .cache/
 
+# Docs site build artifacts
+docs-site/node_modules/
+docs-site/.next/
+docs-site/out/
+
 # OS
 .DS_Store
 .lumyn/
 .smoke_final/
+
+# Secrets / local env (never commit)
+.env
+.env.*
+*.local

@@ -1,0 +1,402 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 255, 255, 255;
+  --background-start-rgb: 17, 24, 39;
+  --background-end-rgb: 3, 7, 18;
+}
+
+body {
+  color: rgb(var(--foreground-rgb));
+  background: linear-gradient(
+      to bottom,
+      rgb(var(--background-start-rgb)),
+      rgb(var(--background-end-rgb))
+    );
+  min-height: 100vh;
+}
+
+/* Custom scrollbar for dark theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1f2937;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
+
+/* ============================================
+   Code Block Styling - Matching Playground
+   ============================================ */
+
+/* Base code block styling */
+pre {
+  background: #0d1117 !important;
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  margin: 1.5rem 0;
+  overflow-x: auto;
+  position: relative;
+}
+
+pre code {
+  display: block;
+  padding: 1rem 1.25rem;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.7;
+  color: #e6edf3;
+  background: transparent !important;
+  counter-reset: line;
+}
+
+/* Line numbers (optional - enable with CSS) */
+pre code.line-numbers {
+  padding-left: 3.5rem;
+}
+
+pre code.line-numbers .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2rem;
+  margin-left: -3rem;
+  margin-right: 1rem;
+  text-align: right;
+  color: #6e7681;
+  font-size: 0.8em;
+}
+
+/* Inline code styling */
+code:not(pre code) {
+  background: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-size: 0.875em;
+  color: #f0f6fc;
+}
+
+.inline-code {
+  background: rgba(110, 118, 129, 0.4);
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+  font-size: 0.875em;
+  color: #f0f6fc;
+}
+
+/* ============================================
+   Syntax Highlighting - GitHub Dark Theme
+   ============================================ */
+
+/* Comments */
+.hljs-comment,
+.hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+/* Keywords */
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-type {
+  color: #ff7b72;
+}
+
+/* Built-in functions and classes */
+.hljs-built_in,
+.hljs-class .hljs-title,
+.hljs-title.class_ {
+  color: #ffa657;
+}
+
+/* Functions */
+.hljs-function .hljs-title,
+.hljs-title.function_,
+.hljs-attr {
+  color: #d2a8ff;
+}
+
+/* Strings */
+.hljs-string,
+.hljs-template-variable,
+.hljs-addition {
+  color: #a5d6ff;
+}
+
+/* Numbers */
+.hljs-number,
+.hljs-literal,
+.hljs-symbol,
+.hljs-bullet {
+  color: #79c0ff;
+}
+
+/* Variables and parameters */
+.hljs-variable,
+.hljs-params,
+.hljs-template-tag {
+  color: #ffa657;
+}
+
+/* Operators and punctuation */
+.hljs-operator,
+.hljs-punctuation {
+  color: #e6edf3;
+}
+
+/* Python-specific */
+.hljs-decorator,
+.hljs-meta {
+  color: #79c0ff;
+}
+
+/* Self, this keywords */
+.hljs-variable.language_ {
+  color: #ff7b72;
+}
+
+/* Property access */
+.hljs-property {
+  color: #79c0ff;
+}
+
+/* Deletion (diff) */
+.hljs-deletion {
+  color: #ffa198;
+  background: rgba(255, 129, 130, 0.15);
+}
+
+/* Addition (diff) */
+.hljs-addition {
+  color: #7ee787;
+  background: rgba(63, 185, 80, 0.15);
+}
+
+/* Type annotations */
+.hljs-type {
+  color: #ff7b72;
+}
+
+/* Section headings in code */
+.hljs-section {
+  color: #79c0ff;
+  font-weight: bold;
+}
+
+/* Emphasis */
+.hljs-emphasis {
+  font-style: italic;
+}
+
+/* Strong */
+.hljs-strong {
+  font-weight: bold;
+}
+
+/* ============================================
+   Alternative: One Dark Theme Colors
+   (Uncomment to use instead)
+   ============================================ */
+/*
+.hljs-keyword { color: #c678dd; }
+.hljs-string { color: #98c379; }
+.hljs-comment { color: #5c6370; }
+.hljs-function .hljs-title { color: #61afef; }
+.hljs-number { color: #d19a66; }
+.hljs-built_in { color: #e5c07b; }
+.hljs-variable { color: #e06c75; }
+*/
+
+/* Smooth transitions */
+* {
+  transition-property: color, background-color, border-color, opacity;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
+/* Navigation active state */
+.nav-link-active {
+  background-color: rgba(34, 211, 238, 0.1);
+  color: #22d3ee;
+  border-left-color: #22d3ee;
+}
+
+/* Prose overrides for docs */
+.prose pre {
+  margin: 1.5rem 0;
+  background: #0d1117 !important;
+}
+
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
+.prose img {
+  border-radius: 0.5rem;
+  border: 1px solid #374151;
+}
+
+.prose table {
+  display: block;
+  overflow-x: auto;
+}
+
+/* Blockquotes */
+.prose blockquote {
+  border-left-color: #22d3ee;
+  background: rgba(34, 211, 238, 0.05);
+  padding: 0.5rem 1rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+}
+
+/* Links in prose */
+.prose a {
+  color: #22d3ee;
+  text-decoration: none;
+}
+
+.prose a:hover {
+  text-decoration: underline;
+}
+
+/* ============================================
+   Button Text Override - Prevent Link Styles
+   ============================================ */
+
+/* Primary buttons - dark text on cyan background */
+a.bg-cyan-500,
+a.bg-cyan-400 {
+  color: #111827 !important; /* gray-900 */
+}
+
+/* Secondary buttons - light text on dark background */
+a.bg-gray-800,
+a.bg-gray-700 {
+  color: #f3f4f6 !important; /* gray-100 */
+}
+
+/* ============================================
+   Mermaid Diagram Styling
+   ============================================ */
+
+.mermaid {
+  background: #0d1117;
+  border-radius: 0.5rem;
+  border: 1px solid #30363d;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Override mermaid text colors for dark theme */
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .label {
+  color: #e6edf3;
+  fill: #e6edf3;
+}
+
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node ellipse,
+.mermaid .node polygon {
+  fill: #1f2937;
+  stroke: #30363d;
+}
+
+.mermaid .edgePath .path {
+  stroke: #8b949e;
+}
+
+.mermaid .arrowheadPath {
+  fill: #8b949e;
+}
+
+/* ============================================
+   Table Styling for Docs
+   ============================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+  font-size: 0.875rem;
+  background: rgba(31, 41, 55, 0.3);
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+thead {
+  background: rgba(31, 41, 55, 0.8);
+}
+
+th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #22d3ee;
+  border-bottom: 1px solid #374151;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #374151;
+  color: #d1d5db;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+tr:hover {
+  background: rgba(55, 65, 81, 0.3);
+}
+
+/* Table responsive wrapper */
+.prose table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ============================================
+   Search Modal - Ensure proper z-index stacking
+   ============================================ */
+
+/* Reset stacking context for code blocks when modal is open */
+body:has(.search-modal-overlay) pre {
+  position: static;
+}
+
+/* Ensure search modal overlay is always on top */
+.search-modal-overlay {
+  isolation: isolate;
+}
