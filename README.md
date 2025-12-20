@@ -224,3 +224,11 @@ Endpoints:
 - **Decision as an artifact**: every gate yields a record.
 - **Policy + outcomes, not prompts**: rules tie to action classes and objective outcomes.
 - **Telemetry ≠ truth**: OpenTelemetry is for visibility; the Decision Record is the system of record.
+
+---
+
+<p align="center">
+  <a href="https://lumynoss.vercel.app"><strong>Try in Browser</strong></a> ·
+  <a href="https://davidahmann.github.io/lumyn/docs/quickstart"><strong>Quickstart</strong></a> ·
+  <a href="https://davidahmann.github.io/lumyn/docs/"><strong>Docs</strong></a>
+</p>
