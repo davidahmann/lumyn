@@ -76,3 +76,14 @@ containing the request and derived evaluation features (e.g. `amount_usd`).
 
 Treat this value as an opaque, replayable digest that lets you verify “same inputs ⇒ same decision”
 across environments.
+
+### Context linkage (recommended)
+
+Lumyn v1 does not enforce a specific “Context Record” product, but you can future-proof your integration
+by treating `request.context` as the stable linkage point:
+
+- Use `context.mode: "reference"` and populate `context.ref.kind` + `context.ref.id` as a foreign key
+  to your Context Record system.
+- Set `context.digest` to the digest of the referenced Context Record.
+
+This preserves replay/audit semantics even as you introduce a dedicated context primitive later.

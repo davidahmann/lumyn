@@ -43,6 +43,18 @@ All digests are `sha256:<hex>` computed via JSON Canonicalization Scheme (JCS).
     - `request` (as persisted in the Decision Record)
     - `derived` evaluation features (e.g. `amount_usd`, FX presence)
 
+### Context linkage (v1, recommended)
+
+Lumyn v1 is compatible with an external “Context Record” system without changing schemas:
+
+- Treat `decision_request.v1.context.ref` as the **foreign key** to a Context Record:
+  - `context.ref.kind`: namespaced identifier for the context system (e.g. `fabra.context_record.v1`)
+  - `context.ref.id`: the `context_id`
+- Treat `decision_request.v1.context.digest` as the **content hash** of the referenced Context Record.
+
+This makes Lumyn’s Decision Records replayable/auditable today and keeps the contract stable when a
+dedicated context primitive becomes mandatory in a future major (`decision_request.v2`).
+
 ## Policy (v1) — YAML spec
 
 Canonical specification for `policy.v1`.

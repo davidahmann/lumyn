@@ -13,6 +13,20 @@ Ensure your app generates valid `decision_request.v1` JSON.
 
 `python - <<'PY'\nimport json\nfrom jsonschema import Draft202012Validator\nfrom lumyn.schemas.loaders import load_json_schema\nschema = load_json_schema('schemas/decision_request.v1.schema.json')\nreq = json.load(open('request.json', encoding='utf-8'))\nDraft202012Validator(schema).validate(req)\nprint('ok')\nPY`
 
+### 2.5) Bind to a Context Record (recommended)
+
+To avoid future rewrites when you add a context primitive (e.g. Fabra), treat `decision_request.v1.context`
+as the stable linkage point:
+
+- Set `context.mode: "reference"`
+- Set `context.ref.kind: "fabra.context_record.v1"` (or your own context record kind)
+- Set `context.ref.id: <context_id>`
+- Set `context.digest: <sha256 digest of the referenced Context Record>`
+
+This gives you an explicit “foreign key” plus a content-addressed digest for replay and audit.
+
+Example: `examples/curl/v1/decision_request_refund.json`
+
 ## 3) Dry-run locally
 
 - `lumyn decide request.json --pretty`
