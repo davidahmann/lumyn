@@ -147,10 +147,27 @@ jobs:
       - name: Typecheck (mypy)
         run: uv run mypy src
 
-      - name: Dependency audit (pip-audit)
+      - name: Export locked requirements (no-dev)
+        if: matrix.python-version == '3.11'
         run: |
           uv export --format requirements.txt --no-dev --locked --no-emit-project --output-file requirements.txt
-          uv run pip-audit -r requirements.txt
+
+      - name: Dependency audit (pip-audit)
+        if: matrix.python-version == '3.11'
+        run: |
+          uv run pip-audit -r requirements.txt --disable-pip
+
+      - name: Dependency audit (osv-scanner)
+        if: matrix.python-version == '3.11'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+
+      - name: Dependency audit (osv-scanner scan)
+        if: matrix.python-version == '3.11'
+        run: |
+          go install github.com/google/osv-scanner/cmd/osv-scanner@v1.9.2
+          "$(go env GOPATH)/bin/osv-scanner" scan -L requirements.txt --format table
 
       - name: Tests (pytest)
         run: uv run pytest -q
