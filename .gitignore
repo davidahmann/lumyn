@@ -32,6 +32,11 @@ docs-site/node_modules/
 docs-site/.next/
 docs-site/out/
 
+# Playground (Vercel) build artifacts
+playground/node_modules/
+playground/.next/
+playground/out/
+
 # OS
 .DS_Store
 .lumyn/
