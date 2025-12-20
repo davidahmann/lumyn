@@ -16,6 +16,10 @@
   <url><loc>https://davidahmann.github.io/lumyn/blog/</loc><priority>0.8</priority></url>
   <url><loc>https://davidahmann.github.io/lumyn/blog/ai-incident-response-replay/</loc><priority>0.7</priority></url>
   <url><loc>https://davidahmann.github.io/lumyn/blog/decision-logs-vs-telemetry/</loc><priority>0.7</priority></url>
-  <url><loc>https://davidahmann.github.io/lumyn/blog/reason-codes-are-a-contract/</loc><priority>0.7</priority></url>
   <url><loc>https://davidahmann.github.io/lumyn/blog/what-is-a-decision-record/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/reason-codes-are-a-contract/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/lumyn-vs-rag/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/lumyn-vs-finetuning/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/lumyn-vs-langchain/</loc><priority>0.7</priority></url>
+  <url><loc>https://davidahmann.github.io/lumyn/blog/lumyn-vs-opa/</loc><priority>0.7</priority></url>
 </urlset>

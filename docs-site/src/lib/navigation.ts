@@ -46,8 +46,12 @@ export const navigation: NavItem[] = [
     children: [
       { title: 'AI incident response: replay decisions', href: '/blog/ai-incident-response-replay' },
       { title: 'Decision logs vs telemetry', href: '/blog/decision-logs-vs-telemetry' },
-      { title: 'Reason codes are a contract', href: '/blog/reason-codes-are-a-contract' },
       { title: 'What is a Decision Record?', href: '/blog/what-is-a-decision-record' },
+      { title: 'Reason codes are a contract', href: '/blog/reason-codes-are-a-contract' },
+      { title: 'Lumyn vs RAG', href: '/blog/lumyn-vs-rag' },
+      { title: 'Lumyn vs Fine-Tuning', href: '/blog/lumyn-vs-finetuning' },
+      { title: 'Lumyn vs LangChain', href: '/blog/lumyn-vs-langchain' },
+      { title: 'Lumyn vs OPA', href: '/blog/lumyn-vs-opa' },
     ],
   },
 ];
