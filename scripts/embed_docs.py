@@ -171,7 +171,8 @@ def main() -> None:
                     "chunk_index": i,
                     "content": chunk[:2000],
                     "embedding": embedding,
-                }
+                },
+                on_conflict="slug,chunk_index",
             ).execute()
             total_chunks += 1
 
