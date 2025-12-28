@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import zipfile
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -98,17 +99,20 @@ def main(
                 else "schemas/decision_request.v0.schema.json"
             )
 
-            determinism = (
-                record.get("determinism") if isinstance(record.get("determinism"), dict) else {}
+            raw_determinism = record.get("determinism")
+            determinism: dict[str, Any] = (
+                raw_determinism if isinstance(raw_determinism, dict) else {}
             )
             memory_snapshot_digest = None
-            if isinstance(determinism.get("memory"), dict):
-                mem = determinism["memory"]
-                if isinstance(mem.get("snapshot_digest"), str):
-                    memory_snapshot_digest = mem.get("snapshot_digest")
+            raw_mem = determinism.get("memory")
+            if isinstance(raw_mem, dict):
+                snapshot_digest = raw_mem.get("snapshot_digest")
+                if isinstance(snapshot_digest, str):
+                    memory_snapshot_digest = snapshot_digest
 
-            context_ref = (
-                record.get("context_ref") if isinstance(record.get("context_ref"), dict) else None
+            raw_context_ref = record.get("context_ref")
+            context_ref: dict[str, Any] | None = (
+                raw_context_ref if isinstance(raw_context_ref, dict) else None
             )
             context_record_hash = (
                 context_ref.get("record_hash")

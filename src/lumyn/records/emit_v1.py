@@ -70,7 +70,7 @@ def build_decision_record_v1(
     if mode not in {"enforce", "advisory"}:
         mode = policy["defaults"]["mode"]
 
-    record = {
+    record: dict[str, Any] = {
         "schema_version": "decision_record.v1",
         "decision_id": str(ulid.new()),
         "created_at": _utc_now_iso(),

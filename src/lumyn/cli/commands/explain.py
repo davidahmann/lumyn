@@ -63,7 +63,7 @@ def main(
         policy = {}
 
     raw_determinism = record.get("determinism")
-    determinism: dict[str, object]
+    determinism: dict[str, Any]
     if isinstance(raw_determinism, dict):
         determinism = raw_determinism
     else:
@@ -91,10 +91,11 @@ def main(
         context_ref = None
 
     memory_snapshot_digest: str | None = None
-    if isinstance(determinism.get("memory"), dict):
-        mem = determinism["memory"]
-        if isinstance(mem.get("snapshot_digest"), str):
-            memory_snapshot_digest = str(mem.get("snapshot_digest"))
+    raw_mem = determinism.get("memory")
+    if isinstance(raw_mem, dict):
+        snapshot_digest = raw_mem.get("snapshot_digest")
+        if isinstance(snapshot_digest, str):
+            memory_snapshot_digest = snapshot_digest
 
     if markdown:
         typer.echo(
