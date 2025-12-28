@@ -8,11 +8,19 @@ from typing import Any
 
 from jsonschema import Draft202012Validator
 
-from lumyn.engine.consensus import ConsensusEngine
+from lumyn.engine.consensus import (
+    DEFAULT_RISK_THRESHOLD,
+    SUCCESS_ALLOW_THRESHOLD,
+    ConsensusEngine,
+)
 from lumyn.engine.evaluator import EvaluationResult, evaluate_policy
 from lumyn.engine.evaluator_v1 import EvaluationResultV1, evaluate_policy_v1
 from lumyn.engine.normalize import normalize_request
-from lumyn.engine.normalize_v1 import compute_inputs_digest_v1, normalize_request_v1
+from lumyn.engine.normalize_v1 import (
+    build_memory_snapshot_v1,
+    compute_inputs_digest_v1,
+    normalize_request_v1,
+)
 from lumyn.engine.redaction import redact_request_for_persistence
 from lumyn.engine.similarity import top_k_matches
 from lumyn.memory.client import MemoryStore
@@ -421,6 +429,7 @@ def decide_v1(
         failure_similarity_score = 0.0
         success_similarity_score = 0.0
         memory_hits = []
+        memory_snapshot: dict[str, Any] | None = None
 
         if cfg.memory_enabled:
             # 1. Project
@@ -460,6 +469,21 @@ def decide_v1(
 
             # Use uncertainty from Consensus Engine (driven by memory signals)
             uncertainty = consensus.uncertainty
+
+            memory_snapshot = build_memory_snapshot_v1(
+                projection_model=getattr(proj, "model_name", "unknown"),
+                query_top_k=cfg.top_k,
+                risk_threshold=DEFAULT_RISK_THRESHOLD,
+                success_allow_threshold=SUCCESS_ALLOW_THRESHOLD,
+                hits=[
+                    {
+                        "decision_id": h.experience.decision_id,
+                        "outcome": int(h.experience.outcome),
+                        "score": float(h.score),
+                    }
+                    for h in memory_hits
+                ],
+            )
 
         # Legacy fallback for non-memory path
         if not cfg.memory_enabled:
@@ -506,6 +530,7 @@ def decide_v1(
                 ],
             ),
             engine_version=__version__,
+            memory_snapshot=memory_snapshot,
         )
 
         try:

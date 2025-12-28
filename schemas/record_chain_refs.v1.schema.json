@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumyn.dev/schemas/record_chain_refs.v1.schema.json",
+  "title": "Lumyn Record Chain Refs (v1)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "record_chain_refs.v1" },
+    "context_ref": { "$ref": "#/$defs/context_ref" },
+    "decision_ref": { "$ref": "#/$defs/decision_ref" },
+    "receipt_ref": { "$ref": "#/$defs/receipt_ref" }
+  },
+  "$defs": {
+    "sha256_digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "context_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "context_id": { "type": "string", "minLength": 1 },
+        "record_hash": { "$ref": "#/$defs/sha256_digest" }
+      },
+      "minProperties": 1
+    },
+    "decision_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": { "type": "string", "minLength": 1 },
+        "inputs_digest": { "$ref": "#/$defs/sha256_digest" }
+      },
+      "minProperties": 1
+    },
+    "receipt_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "receipt_id": { "type": "string", "minLength": 1 },
+        "receipt_digest": { "$ref": "#/$defs/sha256_digest" }
+      },
+      "minProperties": 1
+    }
+  }
+}

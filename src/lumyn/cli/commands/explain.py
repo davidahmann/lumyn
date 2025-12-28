@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 import typer
 
@@ -82,6 +83,19 @@ def main(
     else:
         context = {}
 
+    raw_context_ref = record.get("context_ref")
+    context_ref: dict[str, Any] | None
+    if isinstance(raw_context_ref, dict):
+        context_ref = raw_context_ref
+    else:
+        context_ref = None
+
+    memory_snapshot_digest: str | None = None
+    if isinstance(determinism.get("memory"), dict):
+        mem = determinism["memory"]
+        if isinstance(mem.get("snapshot_digest"), str):
+            memory_snapshot_digest = str(mem.get("snapshot_digest"))
+
     if markdown:
         typer.echo(
             render_ticket_summary_markdown(
@@ -96,6 +110,8 @@ def main(
                     if determinism.get("inputs_digest")
                     else None
                 ),
+                context_ref=context_ref,
+                memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[r for r in matched_rules if isinstance(r, dict)],
                 obligations=[o for o in obligations if isinstance(o, dict)],
             ).rstrip("\n")

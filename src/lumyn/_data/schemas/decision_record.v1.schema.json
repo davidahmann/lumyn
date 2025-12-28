@@ -24,6 +24,16 @@
     "decision_id": { "type": "string", "minLength": 1 },
     "created_at": { "type": "string", "minLength": 1 },
     "trace": { "type": "object", "additionalProperties": true, "default": {} },
+    "context_ref": {
+      "type": "object",
+      "description": "Optional upstream Context Record reference (e.g. Fabra) for record-chain linkage.",
+      "additionalProperties": false,
+      "properties": {
+        "context_id": { "type": "string", "minLength": 1 },
+        "record_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      },
+      "minProperties": 1
+    },
     "request": { "$ref": "#/$defs/decision_request_v1" },
     "policy": {
       "type": "object",
@@ -161,6 +171,16 @@
             { "if": { "properties": { "mode": { "const": "inline" } } }, "then": { "required": ["inline"] } },
             { "if": { "properties": { "mode": { "const": "reference" } } }, "then": { "required": ["ref"] } }
           ]
+        },
+        "context_ref": {
+          "type": "object",
+          "description": "Optional upstream Context Record reference (e.g. Fabra) for record-chain linkage.",
+          "additionalProperties": false,
+          "properties": {
+            "context_id": { "type": "string", "minLength": 1 },
+            "record_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          },
+          "minProperties": 1
         },
         "policy": {
           "type": "object",

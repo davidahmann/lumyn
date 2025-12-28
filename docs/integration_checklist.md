@@ -25,6 +25,10 @@ as the stable linkage point:
 
 This gives you an explicit “foreign key” plus a content-addressed digest for replay and audit.
 
+For a durable ticket handle (without coupling Lumyn to any context runtime), also include
+`context_ref` on the request with the upstream `context_id` and a `record_hash` (e.g. `sha256:...`),
+and paste `context_id + record_hash` into tickets.
+
 Example: `examples/curl/v1/decision_request_refund.json`
 
 ## 3) Dry-run locally

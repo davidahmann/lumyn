@@ -43,6 +43,17 @@ All digests are `sha256:<hex>` computed via JSON Canonicalization Scheme (JCS).
     - `request` (as persisted in the Decision Record)
     - `derived` evaluation features (e.g. `amount_usd`, FX presence)
 
+### Memory Snapshot Digest (v1, optional)
+When Experience Memory influences (or is consulted for) a decision, Lumyn may include a
+replayable snapshot under `decision_record.v1.determinism.memory`:
+
+- `determinism.memory.schema_version`: `memory_snapshot.v1`
+- `determinism.memory.hits`: the (sorted) memory hits used as the arbitration basis
+- `determinism.memory.snapshot_digest`: SHA-256 of the canonicalized snapshot payload (excluding
+  the `snapshot_digest` field itself)
+
+`lumyn replay` verifies `snapshot_digest` when present.
+
 ### Context linkage (v1, recommended)
 
 Lumyn v1 is compatible with an external “Context Record” system without changing schemas:

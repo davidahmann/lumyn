@@ -25,8 +25,9 @@ Lumyn's unit of evidence is a `decision_id`. Paste it into the ticket, then:
 ## Why teams adopt Lumyn
 
 - **Write-path safety**: gates consequential actions with explicit policy and outcomes.
-- **Replayable decisions**: stable digests (`policy.policy_hash`, `request.context.digest`, `determinism.inputs_digest`).
-- **No bluffing**: uncertainty becomes `ABSTAIN` or `ESCALATE` with reason codes.
+- **Replayable decisions**: stable digests (`policy.policy_hash`, `request.context.digest`, `determinism.inputs_digest`, and `determinism.memory.snapshot_digest` when Memory is enabled).
+- **Record-chain ready**: optionally pass through upstream Context Record linkage (`context_ref.context_id` + `context_ref.record_hash`).
+- **No bluffing**: uncertainty becomes `ABSTAIN` or `ESCALATE` with stable, validated reason codes.
 - **Compounding reliability**: labeled failures/successes feed Experience Memory similarity.
 - **Drop-in**: works as a Python library and as an optional HTTP service.
 
@@ -61,6 +62,8 @@ The Decision Record is the unit you export into incidents, tickets, and postmort
 - You provide a `DecisionRequest` (no external fetches in v1; your app supplies `evidence`).
 - Lumyn evaluations occur in 5 strict stages: `REQUIREMENTS` -> `HARD_BLOCKS` -> `ESCALATIONS` -> `ALLOW_PATHS` -> `DEFAULT`.
 - Lumyn computes Experience Memory similarity from prior labeled outcomes.
+- When Memory is consulted, Lumyn includes a replayable memory snapshot digest in `record.determinism.memory.snapshot_digest`.
+- When an upstream Context Record exists (e.g. Fabra), include `request.context_ref` and Lumyn will persist it as `record.context_ref` for ticketing and chain linkage.
 - Lumyn persists the Decision Record to SQLite before returning (or returns ABSTAIN on storage failure).
 
 ## What a Decision Record looks like
@@ -70,6 +73,10 @@ The Decision Record is the unit you export into incidents, tickets, and postmort
   "schema_version": "decision_record.v1",
   "decision_id": "01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
   "created_at": "2025-12-15T10:00:00Z",
+  "context_ref": {
+    "context_id": "ctx_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
+    "record_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+  },
   "request": {
     "schema_version": "decision_request.v1",
     "subject": { "type": "service", "id": "support-agent", "tenant_id": "acme" },
@@ -79,7 +86,11 @@ The Decision Record is the unit you export into incidents, tickets, and postmort
       "amount": { "value": 201.0, "currency": "USD" }
     },
     "evidence": { "ticket_id": "ZD-1001", "order_id": "82731", "payment_instrument_risk": "low" },
-    "context": { "mode": "digest_only", "digest": "sha256:aaaaaaaa..." }
+    "context": { "mode": "digest_only", "digest": "sha256:aaaaaaaa..." },
+    "context_ref": {
+      "context_id": "ctx_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
+      "record_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
   },
   "policy": {
     "policy_id": "lumyn-support",
@@ -98,7 +109,12 @@ The Decision Record is the unit you export into incidents, tickets, and postmort
   },
   "determinism": {
     "engine_version": "1.0.0",
-    "inputs_digest": "sha256:cccc..."
+    "inputs_digest": "sha256:cccc...",
+    "memory": {
+      "schema_version": "memory_snapshot.v1",
+      "snapshot_digest": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "hits": [{ "decision_id": "01JZ1S7Y1NQ2A0D5JQK2Q2P3X4", "outcome": -1, "score": 0.95 }]
+    }
   }
 }
 ```
@@ -144,8 +160,8 @@ lumyn learn <decision_id> --outcome FAILURE
 ```
 - `lumyn show <decision_id>`, `lumyn explain <decision_id>`
 - `lumyn export <decision_id> --pack --out decision_pack.zip`
-- `lumyn replay decision_pack.zip` (validate pack + digests)
-- `lumyn policy validate` (strict v1 validation)
+- `lumyn replay decision_pack.zip` (validate pack + digests, including the memory snapshot digest when present)
+- `lumyn policy validate` (strict v1 validation, including reason code validation against `schemas/reason_codes.v1.json`)
 - `lumyn migrate old_policy.v0.yml` (upgrade to v1)
 
 ## SDK (drop-in)
@@ -182,6 +198,10 @@ record = decide_v1(
         "context": {
             "mode": "digest_only",
             "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+        },
+        "context_ref": {
+            "context_id": "ctx_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
+            "record_hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
         }
     },
     config=cfg,

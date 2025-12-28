@@ -49,11 +49,13 @@ def load_policy(
         # Actually load_policy defaults are strict v0 paths.
         if str(policy_schema_path).endswith("policy.v0.schema.json"):
             policy_schema_path = "schemas/policy.v1.schema.json"
+        if str(reason_codes_path).endswith("reason_codes.v0.json"):
+            reason_codes_path = "schemas/reason_codes.v1.json"
 
         validate_policy_or_raise(
             policy,
             policy_schema_path=policy_schema_path,
-            reason_codes_path=None,  # v1 does not use strict reason code list yet
+            reason_codes_path=reason_codes_path,
         )
     else:
         validate_policy_or_raise(

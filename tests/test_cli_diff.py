@@ -73,12 +73,12 @@ policy_version: "1.0.0"
 defaults:
   mode: enforce
   default_verdict: DENY
-  default_reason_code: STRICT_DEFAULT
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
 rules:
   - id: DUMMY
     stage: HARD_BLOCKS
     if: { evidence.dummy_is: never_match }
-    then: { verdict: DENY, reason_codes: [DUMMY_RC] }
+    then: { verdict: DENY, reason_codes: [PAYMENT_INSTRUMENT_HIGH_RISK] }
 """,
         encoding="utf-8",
     )
@@ -93,12 +93,12 @@ policy_version: "1.0.0"
 defaults:
   mode: enforce
   default_verdict: ALLOW
-  default_reason_code: DEFAULT_ALLOW
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
 rules:
   - id: R1
     stage: HARD_BLOCKS
     if: { evidence.risk_is: high }
-    then: { verdict: DENY, reason_codes: [HIGH_RISK] }
+    then: { verdict: DENY, reason_codes: [PAYMENT_INSTRUMENT_HIGH_RISK] }
 """,
         encoding="utf-8",
     )

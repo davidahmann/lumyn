@@ -11,7 +11,11 @@ from jsonschema import Draft202012Validator
 
 from lumyn.cli.markdown import render_ticket_summary_markdown
 from lumyn.engine.normalize import normalize_request
-from lumyn.engine.normalize_v1 import compute_inputs_digest_v1, normalize_request_v1
+from lumyn.engine.normalize_v1 import (
+    compute_inputs_digest_v1,
+    compute_memory_snapshot_digest_v1,
+    normalize_request_v1,
+)
 from lumyn.policy.loader import compute_policy_hash
 from lumyn.policy.validate import validate_policy_or_raise
 from lumyn.records.emit import compute_inputs_digest
@@ -177,6 +181,20 @@ def main(
             f"record={expected_inputs_digest} computed=({', '.join(computed_parts)})"
         )
 
+    # Optional: verify the memory snapshot digest when present.
+    memory_snapshot = None
+    if isinstance(determinism.get("memory"), dict):
+        memory_snapshot = determinism["memory"]
+    if isinstance(memory_snapshot, dict) and "snapshot_digest" in memory_snapshot:
+        expected_mem_digest = memory_snapshot.get("snapshot_digest")
+        if isinstance(expected_mem_digest, str):
+            computed_mem_digest = compute_memory_snapshot_digest_v1(memory_snapshot)
+            if expected_mem_digest != computed_mem_digest:
+                die(
+                    "memory_snapshot digest mismatch: "
+                    f"record={expected_mem_digest} computed={computed_mem_digest}"
+                )
+
     decision_id = record.get("decision_id")
     verdict = record.get("verdict")
     raw_reason_codes = record.get("reason_codes")
@@ -201,6 +219,15 @@ def main(
         context = {}
 
     if markdown:
+        context_ref = None
+        if isinstance(record.get("context_ref"), dict):
+            context_ref = record.get("context_ref")
+        memory_snapshot_digest = None
+        if isinstance(determinism.get("memory"), dict):
+            mem = determinism["memory"]
+            if isinstance(mem.get("snapshot_digest"), str):
+                memory_snapshot_digest = str(mem.get("snapshot_digest"))
+
         typer.echo(
             render_ticket_summary_markdown(
                 decision_id=str(decision_id) if decision_id is not None else None,
@@ -210,6 +237,8 @@ def main(
                 policy_hash=policy_hash,
                 context_digest=str(context.get("digest")) if context.get("digest") else None,
                 inputs_digest=matched_inputs_digest,
+                context_ref=context_ref,
+                memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[
                     r for r in (record.get("matched_rules") or []) if isinstance(r, dict)
                 ]

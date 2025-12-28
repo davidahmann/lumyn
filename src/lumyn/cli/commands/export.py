@@ -75,22 +75,73 @@ def main(
             _zip_write_text(zf, "policy.yml", policy_text)
             request_obj = record.get("request", {})
             _zip_write_text(zf, "request.json", _json_pretty(request_obj))
+
+            record_schema_version = record.get("schema_version")
+            if not isinstance(record_schema_version, str) or record_schema_version.strip() == "":
+                record_schema_version = "decision_record.v0"
+
+            record_schema_path = (
+                f"schemas/{record_schema_version}.schema.json"
+                if record_schema_version in {"decision_record.v0", "decision_record.v1"}
+                else "schemas/decision_record.v0.schema.json"
+            )
+            request_schema_version = (
+                request_obj.get("schema_version")
+                if isinstance(request_obj, dict)
+                else "decision_request.v0"
+            )
+            if not isinstance(request_schema_version, str) or request_schema_version.strip() == "":
+                request_schema_version = "decision_request.v0"
+            request_schema_path = (
+                f"schemas/{request_schema_version}.schema.json"
+                if request_schema_version in {"decision_request.v0", "decision_request.v1"}
+                else "schemas/decision_request.v0.schema.json"
+            )
+
+            determinism = (
+                record.get("determinism") if isinstance(record.get("determinism"), dict) else {}
+            )
+            memory_snapshot_digest = None
+            if isinstance(determinism.get("memory"), dict):
+                mem = determinism["memory"]
+                if isinstance(mem.get("snapshot_digest"), str):
+                    memory_snapshot_digest = mem.get("snapshot_digest")
+
+            context_ref = (
+                record.get("context_ref") if isinstance(record.get("context_ref"), dict) else None
+            )
+            context_record_hash = (
+                context_ref.get("record_hash")
+                if isinstance(context_ref, dict) and isinstance(context_ref.get("record_hash"), str)
+                else None
+            )
+            context_id = (
+                context_ref.get("context_id")
+                if isinstance(context_ref, dict) and isinstance(context_ref.get("context_id"), str)
+                else None
+            )
+
             _zip_write_text(
                 zf,
                 "README.txt",
                 "\n".join(
                     [
-                        "Lumyn decision pack (v0)",
+                        f"Lumyn decision pack ({record_schema_version})",
                         "",
                         "Files:",
-                        "- decision_record.json (schema-valid DecisionRecord v0)",
+                        f"- decision_record.json (schema-valid {record_schema_version})",
                         "- policy.yml (policy snapshot by policy_hash, if available)",
-                        "- request.json (original DecisionRequest)",
+                        f"- request.json (schema-valid {request_schema_version})",
                         "",
                         "Replay (library):",
-                        "- Validate decision_record.json against "
-                        "schemas/decision_record.v0.schema.json",
+                        f"- Validate decision_record.json against {record_schema_path}",
+                        f"- Validate request.json against {request_schema_path}",
                         "- Compare digests: policy_hash, context.digest, determinism.inputs_digest",
+                        "- If present, verify: determinism.memory.snapshot_digest",
+                        "- If present, carry upstream: context_id + context_record_hash",
+                        f"  - context_id: {context_id or '(absent)'}",
+                        f"  - context_record_hash: {context_record_hash or '(absent)'}",
+                        f"  - memory_snapshot_digest: {memory_snapshot_digest or '(absent)'}",
                         "",
                     ]
                 ),

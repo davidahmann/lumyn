@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -46,6 +47,8 @@ V1_SUPPORTED_KEYS = {
 }
 
 V1_EVIDENCE_SUFFIXES = {"_is", "_ne", "_in", "_gt", "_gte", "_lt", "_lte"}
+
+REASON_CODE_RE = re.compile(r"^[A-Z0-9_]+$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -176,6 +179,7 @@ def validate_policy_v1(
     policy: Mapping[str, Any],
     *,
     policy_schema: Mapping[str, Any] | None = None,
+    known_reason_codes: Iterable[str] | None = None,
 ) -> PolicyValidationResult:
     errors: list[str] = []
 
@@ -184,8 +188,21 @@ def validate_policy_v1(
         for err in sorted(validator.iter_errors(policy), key=str):
             errors.append(err.message)
 
-    # v1 Reason codes: Is there a controlled vocabulary?
-    # Spec says: "Reason codes are strings." No strict enum enforcement in v1.0.0 (open world).
+    # v1 Reason codes are a contract: stable machine strings. Enforce format always.
+    # If `known_reason_codes` is provided, enforce membership as well.
+    known: set[str] | None = set(known_reason_codes) if known_reason_codes is not None else None
+
+    defaults = policy.get("defaults")
+    if isinstance(defaults, Mapping):
+        default_reason_code = defaults.get("default_reason_code")
+        if isinstance(default_reason_code, str):
+            if not REASON_CODE_RE.fullmatch(default_reason_code):
+                errors.append(
+                    "defaults.default_reason_code must match ^[A-Z0-9_]+$ "
+                    f"(got {default_reason_code!r})"
+                )
+            if known is not None and default_reason_code not in known:
+                errors.append(f"unknown defaults.default_reason_code: {default_reason_code}")
 
     rules = policy.get("rules", [])
     if isinstance(rules, list):
@@ -211,6 +228,21 @@ def validate_policy_v1(
                 for expr in if_any:
                     _validate_v1_rule_expr(rule_id, expr, errors)
 
+            then = rule.get("then")
+            if isinstance(then, Mapping):
+                reason_codes = then.get("reason_codes", [])
+                if isinstance(reason_codes, list):
+                    for code in reason_codes:
+                        if not isinstance(code, str):
+                            continue
+                        if not REASON_CODE_RE.fullmatch(code):
+                            errors.append(
+                                f"rule {rule_id}: reason code must match ^[A-Z0-9_]+$ "
+                                f"(got {code!r})"
+                            )
+                        if known is not None and code not in known:
+                            errors.append(f"rule {rule_id}: unknown reason code: {code}")
+
             # Obligations check?
             # Schema handles structure.
 
@@ -228,7 +260,15 @@ def validate_policy_or_raise(
     schema_version = policy.get("schema_version", "policy.v0")
 
     if schema_version.startswith("policy.v1"):
-        result = validate_policy_v1(policy, policy_schema=policy_schema)
+        known_reason_codes: list[str] | None = None
+        if reason_codes_path is not None:
+            reason_codes_doc = load_json_schema(reason_codes_path)
+            known_reason_codes = [item["code"] for item in reason_codes_doc.get("codes", [])]
+        result = validate_policy_v1(
+            policy,
+            policy_schema=policy_schema,
+            known_reason_codes=known_reason_codes,
+        )
     else:
         # v0 logic
         if not reason_codes_path:

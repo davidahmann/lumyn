@@ -17,6 +17,7 @@ class ProjectionLayer:
     """
 
     def __init__(self, model_name: str = DEFAULT_MODEL_NAME) -> None:
+        self.model_name = model_name
         self.model = TextEmbedding(model_name=model_name)
 
     def embed_request(self, normalized: NormalizedRequestV1) -> list[float]:

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
 
@@ -105,3 +106,66 @@ def compute_inputs_digest_v1(request: dict[str, Any], *, normalized: NormalizedR
     }
     digest = hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
     return f"sha256:{digest}"
+
+
+def compute_memory_snapshot_digest_v1(snapshot: Mapping[str, Any]) -> str:
+    """
+    Compute a digest for the memory snapshot used during arbitration.
+
+    The digest is computed over the snapshot payload excluding the digest field itself.
+    """
+    payload = dict(snapshot)
+    payload.pop("snapshot_digest", None)
+    digest = hashlib.sha256(_canonical_json_bytes(payload)).hexdigest()
+    return f"sha256:{digest}"
+
+
+def build_memory_snapshot_v1(
+    *,
+    projection_model: str,
+    query_top_k: int,
+    risk_threshold: float,
+    success_allow_threshold: float,
+    hits: list[dict[str, Any]],
+) -> dict[str, Any]:
+    """
+    Build a deterministic, replayable summary of the memory basis used for arbitration.
+
+    `hits` should contain only fields that affect arbitration and are stable for replay,
+    e.g. {"decision_id": "...", "outcome": -1|1, "score": 0.93}.
+    """
+    normalized_hits: list[dict[str, Any]] = []
+    for hit in hits:
+        if not isinstance(hit, dict):
+            continue
+        decision_id = hit.get("decision_id")
+        outcome = hit.get("outcome")
+        score = hit.get("score")
+        if not isinstance(decision_id, str):
+            continue
+        if not isinstance(outcome, int) or outcome not in (-1, 1):
+            continue
+        if not isinstance(score, (int, float)):
+            continue
+        normalized_hits.append(
+            {
+                "decision_id": decision_id,
+                "outcome": int(outcome),
+                "score": float(score),
+            }
+        )
+
+    normalized_hits.sort(key=lambda h: (-h["score"], h["decision_id"], h["outcome"]))
+
+    snapshot = {
+        "schema_version": "memory_snapshot.v1",
+        "projection": {"model": projection_model},
+        "query": {"top_k": int(query_top_k)},
+        "consensus": {
+            "risk_threshold": float(risk_threshold),
+            "success_allow_threshold": float(success_allow_threshold),
+        },
+        "hits": normalized_hits,
+    }
+    snapshot["snapshot_digest"] = compute_memory_snapshot_digest_v1(snapshot)
+    return snapshot

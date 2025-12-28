@@ -60,6 +60,7 @@ def build_decision_record_v1(
     inputs_digest: str,
     risk_signals: RiskSignalsV1,
     engine_version: str,
+    memory_snapshot: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     policy = loaded_policy.policy
     mode = (request.get("policy", {}) if isinstance(request.get("policy"), dict) else {}).get(
@@ -112,4 +113,9 @@ def build_decision_record_v1(
         },
         "extensions": {},
     }
+    context_ref = request.get("context_ref")
+    if isinstance(context_ref, dict):
+        record["context_ref"] = context_ref
+    if memory_snapshot is not None:
+        record["determinism"]["memory"] = memory_snapshot
     return record

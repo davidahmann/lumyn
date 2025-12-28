@@ -50,6 +50,8 @@ def render_ticket_summary_markdown(
     policy_hash: str | None,
     context_digest: str | None,
     inputs_digest: str | None,
+    context_ref: dict[str, Any] | None = None,
+    memory_snapshot_digest: str | None = None,
     matched_rules: list[dict[str, Any]],
     obligations: list[dict[str, Any]],
 ) -> str:
@@ -61,7 +63,14 @@ def render_ticket_summary_markdown(
     lines.append(f"- reason_codes: `{', '.join(reason_codes) or '(none)'}`")
     lines.append(f"- policy_hash: `{policy_hash}`")
     lines.append(f"- context_digest: `{context_digest}`")
+    if isinstance(context_ref, dict) and context_ref:
+        if isinstance(context_ref.get("context_id"), str):
+            lines.append(f"- context_id: `{context_ref.get('context_id')}`")
+        if isinstance(context_ref.get("record_hash"), str):
+            lines.append(f"- context_record_hash: `{context_ref.get('record_hash')}`")
     lines.append(f"- inputs_digest: `{inputs_digest}`")
+    if memory_snapshot_digest is not None:
+        lines.append(f"- memory_snapshot_digest: `{memory_snapshot_digest}`")
 
     if matched_rules:
         lines.append("")

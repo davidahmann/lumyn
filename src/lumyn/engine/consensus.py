@@ -11,6 +11,9 @@ logger = logging.getLogger(__name__)
 REASON_FAILURE_MEMORY_SIMILAR_BLOCK = "FAILURE_MEMORY_SIMILAR_BLOCK"
 REASON_SUCCESS_MEMORY_SIMILAR_ALLOW = "SUCCESS_MEMORY_SIMILAR_ALLOW"
 
+DEFAULT_RISK_THRESHOLD = 0.9
+SUCCESS_ALLOW_THRESHOLD = 0.98
+
 
 @dataclass(frozen=True, slots=True)
 class ConsensusResult:
@@ -39,7 +42,7 @@ class ConsensusEngine:
         self,
         heuristic_result: EvaluationResultV1,
         memory_hits: list[MemoryHit],
-        risk_threshold: float = 0.9,
+        risk_threshold: float = DEFAULT_RISK_THRESHOLD,
     ) -> ConsensusResult:
         """
         Produce a final verdict based on rules and experience.
@@ -104,7 +107,7 @@ class ConsensusEngine:
         # 3. SELF-HEALING: Check for success similarity
         # If Heuristic says ESCALATE/DENY but Memory says "This looks like a known good pattern"
 
-        if success_score >= 0.98:
+        if success_score >= SUCCESS_ALLOW_THRESHOLD:
             verdict = "ALLOW"
             reason_code = REASON_SUCCESS_MEMORY_SIMILAR_ALLOW
 

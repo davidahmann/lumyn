@@ -19,14 +19,14 @@ policy_version: 1.0.0
 defaults:
   mode: enforce
   default_verdict: ESCALATE
-  default_reason_code: NO_MATCH_DEFAULT
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
 rules:
   - id: R001
     stage: REQUIREMENTS
     if: { action_type: "test.action" }
     then:
       verdict: ALLOW
-      reason_codes: [TEST_ALLOW]
+      reason_codes: [UPDATE_TICKET_OK]
 """
     (workspace / "policy.yml").write_text(policy_content)
 
@@ -45,14 +45,14 @@ policy_version: 2.0.0
 defaults:
   mode: enforce
   default_verdict: ESCALATE
-  default_reason_code: NO_MATCH_DEFAULT
+  default_reason_code: NO_MATCH_DEFAULT_ESCALATE
 rules:
   - id: R001
     stage: REQUIREMENTS
     if: { action_type: "custom.action" }
     then:
       verdict: ALLOW
-      reason_codes: [CUSTOM_ALLOW]
+      reason_codes: [UPDATE_TICKET_OK]
 """
     policy_path = tmp_path / "custom.yml"
     policy_path.write_text(policy_content)
