@@ -104,6 +104,15 @@ def main(
         if isinstance(snapshot_digest, str):
             memory_snapshot_digest = snapshot_digest
 
+    energy_total: float | None = None
+    raw_risk_signals = record.get("risk_signals")
+    if isinstance(raw_risk_signals, dict):
+        raw_energy = raw_risk_signals.get("energy")
+        if isinstance(raw_energy, dict):
+            total = raw_energy.get("total")
+            if isinstance(total, (int, float)):
+                energy_total = float(total)
+
     if markdown:
         typer.echo(
             render_ticket_summary_markdown(
@@ -120,6 +129,7 @@ def main(
                 ),
                 context_ref=context_ref,
                 interaction_ref=interaction_ref,
+                energy_total=energy_total,
                 memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[r for r in matched_rules if isinstance(r, dict)],
                 obligations=[o for o in obligations if isinstance(o, dict)],

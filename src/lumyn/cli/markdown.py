@@ -52,6 +52,7 @@ def render_ticket_summary_markdown(
     inputs_digest: str | None,
     context_ref: dict[str, Any] | None = None,
     interaction_ref: dict[str, Any] | None = None,
+    energy_total: float | None = None,
     memory_snapshot_digest: str | None = None,
     matched_rules: list[dict[str, Any]],
     obligations: list[dict[str, Any]],
@@ -78,6 +79,8 @@ def render_ticket_summary_markdown(
             lines.append(f"- turn_id: `{interaction_ref.get('turn_id')}`")
         if isinstance(interaction_ref.get("turn_index"), int):
             lines.append(f"- turn_index: `{interaction_ref.get('turn_index')}`")
+    if energy_total is not None:
+        lines.append(f"- energy_total: `{energy_total:.6f}`")
     lines.append(f"- inputs_digest: `{inputs_digest}`")
     if memory_snapshot_digest is not None:
         lines.append(f"- memory_snapshot_digest: `{memory_snapshot_digest}`")

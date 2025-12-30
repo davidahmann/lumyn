@@ -54,6 +54,15 @@ replayable snapshot under `decision_record.v1.determinism.memory`:
 
 `lumyn replay` verifies `snapshot_digest` when present.
 
+### Energy (v1, informational)
+Lumyn may include a deterministic scalar “energy” summary under `decision_record.v1.risk_signals.energy`.
+This is a cheap, replayable scoring function (not a search-based EBM) intended to summarize:
+- policy constraint pressure
+- similarity-to-failure / similarity-to-success signals
+- uncertainty / novelty
+
+`risk_signals.energy.schema_version` identifies the scoring semantics (e.g. `energy.v1`).
+
 ### Context linkage (v1, recommended)
 
 Lumyn v1 is compatible with an external “Context Record” system without changing schemas:

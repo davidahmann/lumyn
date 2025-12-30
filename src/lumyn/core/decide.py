@@ -13,6 +13,7 @@ from lumyn.engine.consensus import (
     SUCCESS_ALLOW_THRESHOLD,
     ConsensusEngine,
 )
+from lumyn.engine.energy import compute_energy_v1
 from lumyn.engine.evaluator import EvaluationResult, evaluate_policy
 from lumyn.engine.evaluator_v1 import EvaluationResultV1, evaluate_policy_v1
 from lumyn.engine.normalize import normalize_request
@@ -532,6 +533,24 @@ def decide_v1(
             engine_version=__version__,
             memory_snapshot=memory_snapshot,
         )
+
+        # Attach deterministic "energy" summary (informational only; does not affect verdict).
+        energy = compute_energy_v1(
+            verdict=evaluation.verdict,
+            uncertainty_score=uncertainty,
+            failure_similarity_score=failure_similarity_score,
+            success_similarity_score=success_similarity_score,
+        )
+        record_risk_signals = record.get("risk_signals")
+        if isinstance(record_risk_signals, dict):
+            record_risk_signals["energy"] = {
+                "schema_version": "energy.v1",
+                "total": energy.total,
+                "policy_penalty": energy.policy_penalty,
+                "failure_memory_penalty": energy.failure_memory_penalty,
+                "uncertainty_penalty": energy.uncertainty_penalty,
+                "success_memory_credit": energy.success_memory_credit,
+            }
 
         try:
             store_impl.put_decision_record(record)

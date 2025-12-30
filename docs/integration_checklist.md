@@ -39,6 +39,7 @@ Example: `examples/curl/v1/decision_request_refund.json`
 
 - Verify you can allow/block via `policy.yml` edits.
 - Verify `lumyn replay` works on exported zips.
+- For voice agents, include `interaction_ref` and keep its `timeline` append-only (canonical ordering by `index`).
 
 ## 4.5) Voice / Interaction Tracking (optional)
 
@@ -51,6 +52,12 @@ Do not mutate past events; only append new ones, or replay/dispute gets ambiguou
 Voice is also where consent and retention become product-critical fastest—treat `jurisdiction`,
 `consent_state`, and `retention` as first-class inputs, and ensure key management/retention policies for any
 encrypted journals live in your systems (Lumyn stores refs + digests, not raw audio by default).
+
+## 4.6) Energy / Coherence (optional)
+
+Lumyn may emit a deterministic `risk_signals.energy` scalar (e.g. `energy.v1`) to summarize constraint
+pressure and anomaly/uncertainty signals. Treat it as an informational risk signal; your policy remains the
+source of truth for verdicts.
 
 ## 5) Service mode (optional)
 

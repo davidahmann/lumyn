@@ -230,6 +230,13 @@ def main(
             mem = determinism["memory"]
             if isinstance(mem.get("snapshot_digest"), str):
                 memory_snapshot_digest = str(mem.get("snapshot_digest"))
+        energy_total = None
+        if isinstance(record.get("risk_signals"), dict):
+            energy_obj = record["risk_signals"].get("energy")
+            if isinstance(energy_obj, dict):
+                total = energy_obj.get("total")
+                if isinstance(total, (int, float)):
+                    energy_total = float(total)
 
         typer.echo(
             render_ticket_summary_markdown(
@@ -242,6 +249,7 @@ def main(
                 inputs_digest=matched_inputs_digest,
                 context_ref=context_ref,
                 interaction_ref=interaction_ref,
+                energy_total=energy_total,
                 memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[
                     r for r in (record.get("matched_rules") or []) if isinstance(r, dict)
