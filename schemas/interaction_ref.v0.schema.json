@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://lumyn.dev/schemas/interaction_ref.v0.schema.json",
+  "title": "InteractionRef (v0)",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "mode"],
+  "properties": {
+    "schema_version": { "type": "string", "const": "interaction_ref.v0" },
+    "mode": { "type": "string", "enum": ["voice", "chat"] },
+    "session_id": { "type": "string", "minLength": 1 },
+    "call_id": { "type": "string", "minLength": 1 },
+    "turn_id": { "type": "string", "minLength": 1 },
+    "turn_index": { "type": "integer", "minimum": 0 },
+    "turn_started_at": { "type": "string", "minLength": 1 },
+    "turn_ended_at": { "type": "string", "minLength": 1 },
+    "jurisdiction": { "type": "string", "minLength": 1 },
+    "consent_state": {
+      "type": "string",
+      "enum": ["unknown", "granted", "denied", "revoked"]
+    },
+    "redaction_mode": { "type": "string", "enum": ["default", "strict", "off"] },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "policy": { "type": "string", "minLength": 1 },
+        "expires_at": { "type": "string", "minLength": 1 }
+      }
+    },
+    "timeline": {
+      "type": "array",
+      "description": "Append-only event log in canonical order; do not mutate past events.",
+      "items": { "$ref": "#/$defs/timeline_event" },
+      "default": []
+    }
+  },
+  "$defs": {
+    "timeline_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "at", "type"],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Canonical ordering key: strictly increasing within the interaction."
+        },
+        "at": { "type": "string", "minLength": 1 },
+        "type": { "type": "string", "minLength": 1 },
+        "data": { "type": "object", "additionalProperties": true, "default": {} },
+        "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  }
+}

@@ -116,6 +116,9 @@ def build_decision_record_v1(
     context_ref = request.get("context_ref")
     if isinstance(context_ref, dict):
         record["context_ref"] = context_ref
+    interaction_ref = request.get("interaction_ref")
+    if isinstance(interaction_ref, dict):
+        record["interaction_ref"] = interaction_ref
     if memory_snapshot is not None:
         record["determinism"]["memory"] = memory_snapshot
     return record

@@ -33,6 +33,17 @@ def test_v1_context_ref_is_persisted_and_in_inputs_digest(tmp_path: Path) -> Non
             "context_id": "ctx_01JZ1S7Y1NQ2A0D5JQK2Q2P3X4",
             "record_hash": "sha256:" + ("b" * 64),
         },
+        "interaction_ref": {
+            "schema_version": "interaction_ref.v0",
+            "mode": "voice",
+            "call_id": "call_001",
+            "turn_id": "turn_0003",
+            "turn_index": 3,
+            "jurisdiction": "US-CA",
+            "consent_state": "granted",
+            "redaction_mode": "default",
+            "timeline": [{"index": 0, "at": "2025-12-28T15:00:00Z", "type": "call.started"}],
+        },
     }
 
     Draft202012Validator(load_json_schema("schemas/decision_request.v1.schema.json")).validate(req)
@@ -50,6 +61,8 @@ def test_v1_context_ref_is_persisted_and_in_inputs_digest(tmp_path: Path) -> Non
 
     assert record.get("context_ref") == req["context_ref"]
     assert record["request"].get("context_ref") == req["context_ref"]
+    assert record.get("interaction_ref") == req["interaction_ref"]
+    assert record["request"].get("interaction_ref") == req["interaction_ref"]
 
     normalized = normalize_request_v1(record["request"])
     expected_digest = compute_inputs_digest_v1(record["request"], normalized=normalized)

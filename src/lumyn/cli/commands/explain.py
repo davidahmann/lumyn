@@ -90,6 +90,13 @@ def main(
     else:
         context_ref = None
 
+    raw_interaction_ref = record.get("interaction_ref")
+    interaction_ref: dict[str, Any] | None
+    if isinstance(raw_interaction_ref, dict):
+        interaction_ref = raw_interaction_ref
+    else:
+        interaction_ref = None
+
     memory_snapshot_digest: str | None = None
     raw_mem = determinism.get("memory")
     if isinstance(raw_mem, dict):
@@ -112,6 +119,7 @@ def main(
                     else None
                 ),
                 context_ref=context_ref,
+                interaction_ref=interaction_ref,
                 memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[r for r in matched_rules if isinstance(r, dict)],
                 obligations=[o for o in obligations if isinstance(o, dict)],

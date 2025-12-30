@@ -1,0 +1,23 @@
+{
+  "schema_version": "interaction_ref.v0",
+  "mode": "voice",
+  "session_id": "sess_001",
+  "call_id": "call_001",
+  "turn_id": "turn_0003",
+  "turn_index": 3,
+  "turn_started_at": "2025-12-28T15:00:00Z",
+  "turn_ended_at": "2025-12-28T15:00:10Z",
+  "jurisdiction": "US-CA",
+  "consent_state": "granted",
+  "redaction_mode": "default",
+  "retention": { "policy": "30d", "expires_at": "2026-01-27T00:00:00Z" },
+  "timeline": [
+    { "index": 0, "at": "2025-12-28T15:00:00Z", "type": "call.started" },
+    {
+      "index": 1,
+      "at": "2025-12-28T15:00:01Z",
+      "type": "turn.started",
+      "data": { "speaker": "agent" }
+    }
+  ]
+}

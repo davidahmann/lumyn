@@ -222,6 +222,9 @@ def main(
         context_ref = None
         if isinstance(record.get("context_ref"), dict):
             context_ref = record.get("context_ref")
+        interaction_ref = None
+        if isinstance(record.get("interaction_ref"), dict):
+            interaction_ref = record.get("interaction_ref")
         memory_snapshot_digest = None
         if isinstance(determinism.get("memory"), dict):
             mem = determinism["memory"]
@@ -238,6 +241,7 @@ def main(
                 context_digest=str(context.get("digest")) if context.get("digest") else None,
                 inputs_digest=matched_inputs_digest,
                 context_ref=context_ref,
+                interaction_ref=interaction_ref,
                 memory_snapshot_digest=memory_snapshot_digest,
                 matched_rules=[
                     r for r in (record.get("matched_rules") or []) if isinstance(r, dict)

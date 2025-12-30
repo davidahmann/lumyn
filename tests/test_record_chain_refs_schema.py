@@ -38,3 +38,18 @@ def test_record_chain_refs_schema_rejects_invalid_hash_vector() -> None:
     bad = _load_json(Path("vectors/shared/refs/v1/context_ref_invalid_hash.json"))
     with pytest.raises(Exception):
         validator.validate({"schema_version": "record_chain_refs.v1", "context_ref": bad})
+
+
+def test_interaction_ref_schema_accepts_voice_vector() -> None:
+    schema = _load_json(Path("schemas/interaction_ref.v0.schema.json"))
+    validator = Draft202012Validator(schema)
+    voice = _load_json(Path("vectors/shared/interaction_ref/v0/voice_valid.json"))
+    validator.validate(voice)
+
+
+def test_interaction_ref_schema_rejects_bad_digest() -> None:
+    schema = _load_json(Path("schemas/interaction_ref.v0.schema.json"))
+    validator = Draft202012Validator(schema)
+    bad = _load_json(Path("vectors/shared/interaction_ref/v0/voice_invalid_timeline_hash.json"))
+    with pytest.raises(Exception):
+        validator.validate(bad)
